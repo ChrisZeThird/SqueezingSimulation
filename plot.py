@@ -3,7 +3,7 @@ from mpl_toolkits import mplot3d
 import numpy as np
 
 from utils.misc import wavelength_to_omega
-from noise_spectrum import noise_spectrum_x, noise_spectrum_p
+from noise_spectrum import noise_spectrum_x, noise_spectrum_p, negativity
 from utils.settings import settings
 
 # -- Arrays definition -- #
@@ -55,4 +55,14 @@ plt.title('Squeezing and anti-squeezing versus frequency ($\eta = 0.8$ and $\eps
 # Adjust the layout to accommodate both legends
 plt.subplots_adjust(right=0.85)
 plt.grid(True)
+plt.show()
+
+# -- Wigner negativity vs wavelength -- #
+Omega = np.linspace(start=0, stop=1, num=settings.array_points)
+sx = noise_spectrum_x(omega=0, omega_c=1, escape_efficiency=0.8, epsilon=epsilon_array)
+sp = noise_spectrum_p(omega=0, omega_c=1, escape_efficiency=0.8, epsilon=epsilon_array)
+wigner = negativity(noise_x=sx, noise_p=sp)
+
+fig3 = plt.figure(figsize=(16, 9))
+plt.plot(epsilon_array**2, wigner)
 plt.show()
