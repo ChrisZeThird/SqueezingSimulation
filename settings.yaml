@@ -1,5 +1,9 @@
 # -- Cavity characteristics -- #
-omega_c: float = 65.0e6             # bandwidth of the cavity
-transmission_coeff: float = 0.9     # transmission coefficient of the mirrors
-loss_coeff: float = 0               # fictitious beam-splitter coefficient
-escape_efficiency: float = 1        # proba that if 1 photon escapes it's by output coupler (not due to loss)
+omega_c: 65000000.0           # bandwidth of the cavity
+transmission_coeff: 0.9       # transmission coefficient of the mirrors
+loss_coeff: 0.0               # fictitious beam-splitter coefficient
+escape_efficiency: 0.8        # proba that if 1 photon escapes it's by output coupler (not due to loss)
+threshold: 1.0
+
+# -- Laser characteristics -- #
+input_wavelength: 390e-9

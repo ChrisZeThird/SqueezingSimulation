@@ -24,10 +24,14 @@ class Settings:
     c: float = 3.0e8  # speed of light (m/s)
 
     # -- Cavity characteristics -- #
-    omega_c: float = 65.0e6             # bandwidth of the cavity
+    omega_c: float = 65000000.0            # bandwidth of the cavity
     transmission_coeff: float = 0.9     # transmission coefficient of the mirrors
-    loss_coeff: float = 0               # fictitious beam-splitter coefficient
-    escape_efficiency: float = 1        # proba that if 1 photon escapes it's by output coupler (not due to loss)
+    loss_coeff: float = 0.0               # fictitious beam-splitter coefficient
+    escape_efficiency: float = 1.0        # proba that if 1 photon escapes it's by output coupler (not due to loss)
+    threshold: float = 1.0              # denotes epsilon
+
+    # -- Laser characteristics -- #
+    input_wavelength: float = 780.0e-9
 
     def __init__(self):
         """
@@ -63,6 +67,10 @@ class Settings:
                     return str
                 else:
                     return type_mapping(arg_value[0])
+            if type(arg_value) == float:
+                return float
+            if type(arg_value) == int:
+                return int
 
         p = configargparse.get_argument_parser(default_config_files=['./settings.yaml'])
 
