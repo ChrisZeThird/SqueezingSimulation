@@ -58,11 +58,11 @@ plt.grid(True)
 plt.show()
 
 # -- Wigner negativity vs wavelength -- #
-Omega = np.linspace(start=0, stop=1, num=settings.array_points)
-sx = noise_spectrum_x(omega=0, omega_c=1, escape_efficiency=0.8, epsilon=epsilon_array)
-sp = noise_spectrum_p(omega=0, omega_c=1, escape_efficiency=0.8, epsilon=epsilon_array)
-wigner = negativity(noise_x=sx, noise_p=sp)
-
-fig3 = plt.figure(figsize=(16, 9))
-plt.plot(epsilon_array**2, wigner)
-plt.show()
+# Omega = np.linspace(start=0, stop=1, num=settings.array_points)
+# sx = noise_spectrum_x(omega=0, omega_c=1, escape_efficiency=0.8, epsilon=epsilon_array)
+# sp = noise_spectrum_p(omega=0, omega_c=1, escape_efficiency=0.8, epsilon=epsilon_array)
+# wigner = negativity(noise_x=sx, noise_p=sp)
+#
+# fig3 = plt.figure(figsize=(16, 9))
+# plt.plot(epsilon_array**2, wigner)
+# plt.show()
