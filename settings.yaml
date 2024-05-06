@@ -1,0 +1,5 @@
+# -- Cavity characteristics -- #
+omega_c: float = 65.0e6             # bandwidth of the cavity
+transmission_coeff: float = 0.9     # transmission coefficient of the mirrors
+loss_coeff: float = 0               # fictitious beam-splitter coefficient
+escape_efficiency: float = 1        # proba that if 1 photon escapes it's by output coupler (not due to loss)
