@@ -48,6 +48,10 @@ plt.plot(omega_array/settings.omega_c, 10*np.log10(sp), linestyle='--')
 # Create the legend (for line style)
 legend_quadrature = plt.legend(['$s_x$', '$s_p$'], loc='upper right')
 
+plt.xlabel("$\omega/\omega_c$")
+plt.ylabel('$S$ (dB)')
+plt.title('Squeezing and anti-squeezing versus frequency ($\eta = 0.8$ and $\epsilon = 0.5$)')
+
 # Adjust the layout to accommodate both legends
 plt.subplots_adjust(right=0.85)
 plt.grid(True)
