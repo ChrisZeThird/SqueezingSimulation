@@ -3,12 +3,13 @@ from mpl_toolkits import mplot3d
 import numpy as np
 
 from utils.misc import wavelength_to_omega
-from noise_spectrum import noise_spectrum_x, noise_spectrum_p, negativity
+from noise_spectrum import noise_spectrum_x, noise_spectrum_p
 from utils.settings import settings
 
-# -- Arrays definition -- #
-lambda_array = np.linspace(start=0, stop=800e-9, num=settings.array_points)  # wavelength
-omega_array = wavelength_to_omega(lambda_array)
+# -- Arrays definitions -- #
+lambda_array = np.linspace(start=0, stop=1000, num=settings.array_points) * 1e-9  # wavelength
+# omega_array = wavelength_to_omega(lambda_array)
+omega_array = np.linspace(start=0, stop=3*settings.omega_c, num=settings.array_points)
 
 escape_efficiencies = np.linspace(start=0.8, stop=0.96, num=10)  # escape efficiency range
 epsilon_array = np.linspace(start=0, stop=1, num=settings.array_points, endpoint=False)  # threshold or pump power
@@ -57,12 +58,3 @@ plt.subplots_adjust(right=0.85)
 plt.grid(True)
 plt.show()
 
-# -- Wigner negativity vs wavelength -- #
-# Omega = np.linspace(start=0, stop=1, num=settings.array_points)
-# sx = noise_spectrum_x(omega=0, omega_c=1, escape_efficiency=0.8, epsilon=epsilon_array)
-# sp = noise_spectrum_p(omega=0, omega_c=1, escape_efficiency=0.8, epsilon=epsilon_array)
-# wigner = negativity(noise_x=sx, noise_p=sp)
-#
-# fig3 = plt.figure(figsize=(16, 9))
-# plt.plot(epsilon_array**2, wigner)
-# plt.show()

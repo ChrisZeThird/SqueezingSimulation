@@ -26,6 +26,3 @@ def noise_spectrum_p(omega, omega_c, escape_efficiency, epsilon):
     """
     return 1 - escape_efficiency * (4 * epsilon) / ((1 + epsilon) ** 2 + (omega / omega_c) ** 2)
 
-
-def negativity(noise_x, noise_p):
-    return -((1/noise_x + 1/noise_p - 2)/(noise_x + noise_p - 2)) * ((noise_x + noise_p + 2)/(1/noise_x + 1/noise_p + 2)) * (2/(noise_x + noise_p))
