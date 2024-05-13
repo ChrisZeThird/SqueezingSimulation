@@ -8,9 +8,9 @@ from noise_spectrum import noise_spectrum_x, noise_spectrum_p
 from utils.settings import settings
 
 # -- Matplotlib parameters -- #
-SMALL_SIZE = 12
-MEDIUM_SIZE = 16
-BIGGER_SIZE = 22
+SMALL_SIZE = 16
+MEDIUM_SIZE = 22
+BIGGER_SIZE = 28
 
 plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
 plt.rc('axes', titlesize=BIGGER_SIZE)     # fontsize of the axes title
@@ -78,4 +78,3 @@ plt.ylabel('$S$ (dB)')
 plt.subplots_adjust(right=0.85)
 plt.grid(True)
 plt.show()
-
