@@ -1,7 +1,9 @@
 import argparse
 from dataclasses import asdict, dataclass
+from typing import Any
 
 import configargparse
+from numpy import inf
 from numpy.distutils.misc_util import is_sequence
 
 from utils.logger import logger
@@ -18,10 +20,10 @@ class Settings:
         - arguments of the command line (with "--" in front)
     """
 
-    array_points: int = 100  # size of arrays
+    array_points: int = 1000  # size of arrays
 
     # -- Universal constants -- #
-    c: float = 3.0e8  # speed of light (m/s)
+    c: float = 299792458.0  # speed of light (m/s)
 
     # -- Cavity characteristics -- #
     omega_c: float = 65000000.0            # bandwidth of the cavity
@@ -31,13 +33,85 @@ class Settings:
     threshold: float = 1.0              # denotes epsilon
 
     # -- Laser characteristics -- #
+    window: float = 50e-9
+
     input_wavelength: float = 780.0e-9
+    lambda_central: float = 780E-9  # signal central wavelength in [m]
+
+    pump_center: float = lambda_central / 2  # pump central wavelength in [m]
+    pump_width: float = 1E-9  # pump intensity FWHM in [m]
+    pump_temporal_mode: int = 0  # temporal mode order of the pump
+
+    signal_center: float = lambda_central  # signal central wavelength in [m]
+    signal_start: float = lambda_central - window  # start of signal plot range in [m]
+    signal_stop: float = lambda_central + window  # end of signal plot range in [m]
+
+    idler_start: float = lambda_central - window  # start of idler plot range in [m]
+    idler_stop: float = lambda_central + window  # end of idler plot range in [m]
+
+    signal_wavelength: Any = None
+    idler_wavelength: Any = None
+
+    signal_steps: int = 800  # points along the signal axis
+    idler_steps: int = 800  # points along the idler axis
+    rebin_factor: int = 1
+
+    # -- Crystal -- #
+    crystal: str = 'PPKTP'
+    length: int = 10e-3
+    width: float = 3e-6
+    height: float = 3e-6
+    grating: type(float('inf')) = inf
+    temperature: float = 25.0
+    pump_index: Any = None
+    signal_index: Any = None
+    idler_index: Any = None
+
+    hfile: Any = None
+    vfile: Any = None
+
+    # -- Polarization -- #
+    polarization_type: int = 0
+    pump_polarization: str = "V"
+    signal_polarization: str = "V"
+    idler_polarization: str = "V"
 
     def __init__(self):
         """
         Create the setting object.
         """
         self._load_file_and_cmd()
+
+    def validate(self):
+        """
+        Validate settings.
+        :return:
+        """
+
+        # Possible polarization
+        valid_polarizations = ['V', 'H']
+        assert self.pump_polarization in valid_polarizations, f'Invalid Pump Polarization: "{self.pump_polarization}"'
+        assert self.idler_polarization in valid_polarizations, f'Invalid Idler Polarization: "{self.idler_polarization}"'
+        assert self.signal_polarization in valid_polarizations, f'Invalid Signal Polarization: "{self.signal_polarization}"'
+
+        valid_polarization_type = [0, 1, 2]
+        assert self.polarization_type in valid_polarization_type
+        if self.polarization_type == 0:
+            if self.pump_polarization != self.signal_polarization or self.pump_polarization != self.idler_polarization:
+                raise ValueError("For Type 0, pump, signal, and idler polarizations must be equal.")
+        elif self.polarization_type == 1:
+            if self.signal_polarization != self.idler_polarization:
+                raise ValueError("For Type 1, signal and idler polarizations must be equal.")
+            if self.pump_polarization == self.signal_polarization or self.pump_polarization == self.idler_polarization:
+                raise ValueError("For Type 1, pump polarization must be different from signal and idler.")
+        elif self.polarization_type == 2:
+            if self.signal_polarization == self.idler_polarization:
+                raise ValueError("For Type 2, signal and idler polarizations must be different.")
+            if self.signal_polarization != self.pump_polarization and self.idler_polarization != self.pump_polarization:
+                raise ValueError("For Type 2, pump polarization must match either signal or idler polarization.")
+
+        valid_crystals = ['LN', 'PPLN', 'KTP', 'PPKTP', 'BBO']
+        assert self.crystal.upper() in valid_crystals, f"Invalid Crystal name: {self.crystal}"
 
     def _load_file_and_cmd(self) -> None:
         """
@@ -94,6 +168,8 @@ class Settings:
             if value is not None:
                 # Directly set the value to bypass the "__setattr__" function
                 self.__dict__[name] = value
+
+        self.validate()
 
     def __setattr__(self, name, value) -> None:
         """

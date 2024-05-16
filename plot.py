@@ -31,18 +31,25 @@ lambda_array = np.linspace(start=0, stop=1000, num=settings.array_points) * 1e-9
 omega_array = np.linspace(start=0, stop=3*settings.omega_c, num=settings.array_points)
 
 escape_efficiencies = np.linspace(start=0.8, stop=0.96, num=10)  # escape efficiency range
+escape_efficiency = settings.escape_efficiency
+
 epsilon_array = np.linspace(start=0, stop=1, num=settings.array_points, endpoint=False)  # threshold or pump power
 
 colors = plt.cm.viridis(np.linspace(0, 1, len(escape_efficiencies)))  # Using a colormap for colors
 
 # -- Squeezing and anti-squeezing versus pump power -- #
 fig1 = plt.figure(figsize=(16, 9))
-for idx, escape_efficiency in enumerate(escape_efficiencies):
-    sx = noise_spectrum_x(omega=0.0, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon_array)
-    sp = noise_spectrum_p(omega=0.0, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon_array)
-    color = colors[idx]
-    plt.plot(epsilon_array**2, 10*np.log10(sx), color=colors[idx])
-    plt.plot(epsilon_array**2, 10*np.log10(sp), color=colors[idx], linestyle='--')
+# for idx, escape_efficiency in enumerate(escape_efficiencies):
+#     sx = noise_spectrum_x(omega=0.0, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon_array)
+#     sp = noise_spectrum_p(omega=0.0, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon_array)
+#     color = colors[idx]
+#     plt.plot(epsilon_array**2, 10*np.log10(sx), color=colors[idx])
+#     plt.plot(epsilon_array**2, 10*np.log10(sp), color=colors[idx], linestyle='--')
+
+sx = noise_spectrum_x(omega=0.0, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon_array)
+sp = noise_spectrum_p(omega=0.0, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon_array)
+plt.plot(epsilon_array**2, 10*np.log10(sx), color='black')
+plt.plot(epsilon_array**2, 10*np.log10(sp), color='black', linestyle='--')
 
 # Create the legend (for line style)
 legend_quadrature = plt.legend(['$s_x$', '$s_p$'], loc='upper left')
@@ -51,7 +58,7 @@ for line in legend_quadrature.get_lines():
 
 plt.xlabel("$P/P_{thr} = \epsilon^2$")
 plt.ylabel('$S$ (dB)')
-# plt.title('Squeezing and anti-squeezing versus pump power at zero frequency')
+plt.title(f'Squeezing and anti-squeezing versus pump power at zero frequency. $\eta =$ {escape_efficiency}')
 
 # Adjust the layout to accommodate both legends
 plt.subplots_adjust(right=0.85)
@@ -60,8 +67,8 @@ plt.show()
 
 # -- Squeezing and anti-squeezing versus wavelength -- #
 fig2 = plt.figure(figsize=(16, 9))
-escape_efficiency = 0.8
 epsilon = 0.1
+
 sx = noise_spectrum_x(omega=omega_array, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon)
 sp = noise_spectrum_p(omega=omega_array, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon)
 plt.plot(omega_array/settings.omega_c, 10*np.log10(sx))
