@@ -36,7 +36,7 @@ R = 10e-2
 l = 10e-3
 
 d_flat, OF, OC, cos_theta, S = finding_unknown_distance(L, R, l, d_curved)
-print(d_flat)
+print('Distance between the flat mirrors: ', d_flat)
 
 
 def crystal_waist(L, R, S, wavelength=780e-9):
@@ -61,4 +61,4 @@ crystal_lengths = np.arange(start=5, stop=30, step=5) * 1e-3
 expected_waists = {"G. Hétet": 40e-6, "Appel": None, "T. Takahito": 20e-6, "Takao": 17e-6}
 
 distance_crystal_mirror = (d_curved - l)/2
-print(crystal_waist(L=distance_crystal_mirror, R=R, S=S, wavelength=795e-9))
+print('Crystal waist: ', crystal_waist(L=distance_crystal_mirror, R=R, S=S, wavelength=795e-9))
