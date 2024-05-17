@@ -49,10 +49,16 @@ def crystal_waist(L, R, S, wavelength=780e-9):
     :param wavelength:
     :return:
     """
-    return np.sqrt(wavelength / np.pi) * ((- (L - R / 2)((S - L) * L - S * R / 2)) / (S - L - R / 2)) ** (1 / 4)
+    A = (L - R / 2)
+    B = ((S - L) * L - S * R / 2)
+    C = (S - L - R / 2)
+    return np.sqrt(wavelength / np.pi) * ((- A * B) / C) ** (1 / 4)
 
 
 """ Checking some parameters """
 radii = np.array([25, 50, 100]) * 1e-3
 crystal_lengths = np.arange(start=5, stop=30, step=5) * 1e-3
 expected_waists = {"G. Hétet": 40e-6, "Appel": None, "T. Takahito": 20e-6, "Takao": 17e-6}
+
+distance_crystal_mirror = (d_curved - l)/2
+print(crystal_waist(L=distance_crystal_mirror, R=R, S=S, wavelength=795e-9))
