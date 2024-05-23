@@ -11,8 +11,8 @@ c = settings.c
 # Setting parameters
 number_points = 300
 
-min_L = 0.1
-max_L = 2.0
+min_L = 1
+max_L = 3.0
 min_T = 0.5
 max_T = 1
 cavity_lengths = np.linspace(start=min_L, stop=max_L, num=number_points)
@@ -35,6 +35,18 @@ def bandwidth(cavity_length, transmission_coefficient):
 
 bandwidth_meshgrid = bandwidth(cavity_length=L, transmission_coefficient=T) * 1e-6
 clev = np.arange(bandwidth_meshgrid.min(), bandwidth_meshgrid.max(), 0.1)
+
+# Find couple (L, T) such that Delta within range
+central_freq = 10  # MHz
+threshold = 0.1
+boundary_down = central_freq - threshold * central_freq
+boundary_up = central_freq + threshold * central_freq
+
+# print(np.shape(bandwidth_meshgrid))
+indices = np.where((bandwidth_meshgrid < 11) & (bandwidth_meshgrid > 9))   # here np.where gives a tuple, the first element of which gives the row index, while the
+                                                                        # second element gives the corresponding column index
+length_range = L[indices]
+transmission_range = T[indices]
 
 # -- Matplotlib parameters -- #
 SMALL_SIZE = 15
@@ -66,42 +78,32 @@ cmap = matplotlib.colormaps['plasma']  # define the colormap
 # Setting figure
 # fig, ax = plt.subplots(1, 1, figsize=(8, 8))
 fig, ax = plt.subplots()
-# contour_plot = ax.contourf(L, T, bandwidth_meshgrid, clev, cmap=cmap)
+contour_plot = ax.contourf(L, T, bandwidth_meshgrid, clev, cmap=cmap)
 
-dL = (cavity_lengths[1]-cavity_lengths[0])/2.
-dT = (transmission_coefficients[1]-transmission_coefficients[0])/2.
-extent = (cavity_lengths[0] - dL, cavity_lengths[-1] + dL, transmission_coefficients[0] - dT, transmission_coefficients[-1] + dT)
+# contour_plot = ax.imshow(bandwidth_meshgrid, cmap=cmap)
 
-contour_plot = ax.imshow(bandwidth_meshgrid, cmap=cmap)
-# ax.axes.get_xaxis().set_ticks([])
-# ax.axes.get_yaxis().set_ticks([])
-
-nb_ticks = 6
-
-xticks = np.around(np.linspace(start=min_L, stop=max_L, num=nb_ticks), decimals=2)
-yticks = np.around(np.linspace(start=min_T, stop=max_T, num=nb_ticks), decimals=2)
+nb_ticks = 7
+xticks = np.around(np.linspace(start=min_L, stop=max_L, num=nb_ticks), decimals=1)
+yticks = np.around(np.linspace(start=min_T, stop=max_T, num=nb_ticks), decimals=1)
 new_xticks = np.linspace(0, number_points, nb_ticks)
 new_yticks = np.linspace(0, number_points, nb_ticks)
 
-ax.set_xticks(new_xticks, labels=xticks)
-# ax.set_xticklabels(cavity_lengths)
-ax.set_yticks(new_yticks, labels=yticks)
-# ax.set_yticklabels(transmission_coefficients)
+# ax.set_xticks(new_xticks, labels=xticks)
+# ax.set_yticks(new_yticks, labels=yticks)
 
 ax.set_xlabel('Cavity length L (m)')
 ax.set_ylabel('Transmission coefficient')
 
 # Highlight the region where bandwidth is within desired range
-central_freq = 10  # MHz
-threshold = 0.1
-boundary_down = central_freq - threshold * central_freq
-boundary_up = central_freq + threshold * central_freq
-ax.contour(bandwidth_meshgrid, levels=[central_freq], colors='white')
+# ax.contour(bandwidth_meshgrid, levels=[central_freq], colors='white')
 
 cbar = plt.colorbar(contour_plot, ax=ax)
 cbar.outline.set_visible(False)
-cbar.ax.axhline(y=central_freq, color='white')
-
+# cbar.ax.axhline(y=boundary_down, color='white', linewidth=1, alpha=0.5)
+# print(cbar.get_ticks())
+# cbar.ax.axhline(y=boundary_up, color='white', linewidth=1, alpha=0.5)
+cbar.ax.axhline(y=central_freq, color='white', linewidth=50, alpha=0.5)
+ax.plot(length_range, transmission_range, c='white', alpha=0.5)
 # Set label
 # original_ticks = list(cbar.get_ticks())
 # cbar.set_ticks(original_ticks + [central_freq])
