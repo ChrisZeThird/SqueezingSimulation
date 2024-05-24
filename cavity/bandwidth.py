@@ -4,6 +4,7 @@ import numpy as np
 
 from utils.settings import settings
 from utils.misc import approximate_to_next_ten
+import utils.plot_parameters as mplp
 
 # Setting constants
 c = settings.c
@@ -48,25 +49,6 @@ indices = np.where((bandwidth_meshgrid < 11) & (bandwidth_meshgrid > 9))   # her
 length_range = L[indices]
 transmission_range = T[indices]
 
-# -- Matplotlib parameters -- #
-SMALL_SIZE = 15
-MEDIUM_SIZE = 20
-BIGGER_SIZE = 25
-
-plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
-plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
-plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
-plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
-
-matplotlib.rcParams['mathtext.fontset'] = 'cm'
-matplotlib.rcParams['font.family'] = 'STIXGeneral'
-
-alpha = 0.3
-# Set cmap
-cmap = matplotlib.colormaps['plasma']  # define the colormap
 # cmaplist = [cmap(i) for i in range(cmap.N)]  # extract all colors from the .jet map
 # cmaplist[0] = (.5, .5, .5, 1.0)  # force the first color entry to be grey
 #
@@ -79,7 +61,7 @@ cmap = matplotlib.colormaps['plasma']  # define the colormap
 # Setting figure
 # fig, ax = plt.subplots(1, 1, figsize=(8, 8))
 fig, ax = plt.subplots()
-contour_plot = ax.contourf(L, T, bandwidth_meshgrid, clev, cmap=cmap)
+contour_plot = ax.contourf(L, T, bandwidth_meshgrid, clev, cmap=mplp.cmap)
 
 # contour_plot = ax.imshow(bandwidth_meshgrid, cmap=cmap)
 
@@ -103,8 +85,8 @@ cbar.outline.set_visible(False)
 # cbar.ax.axhline(y=boundary_down, color='white', linewidth=1, alpha=0.5)
 # print(cbar.get_ticks())
 # cbar.ax.axhline(y=boundary_up, color='white', linewidth=1, alpha=0.5)
-cbar.ax.axhline(y=central_freq, color='white', linewidth=50, alpha=alpha)
-ax.plot(length_range, transmission_range, c='white', alpha=alpha)
+cbar.ax.axhline(y=central_freq, color='white', linewidth=50, alpha=mplp.alpha)
+ax.plot(length_range, transmission_range, c='white', alpha=mplp.alpha)
 # Set label
 # original_ticks = list(cbar.get_ticks())
 # cbar.set_ticks(original_ticks + [central_freq])
