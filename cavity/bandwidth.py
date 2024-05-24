@@ -11,9 +11,9 @@ c = settings.c
 # Setting parameters
 number_points = 300
 
-min_L = 1
+min_L = 0.5
 max_L = 3.0
-min_T = 0.5
+min_T = 0
 max_T = 1
 cavity_lengths = np.linspace(start=min_L, stop=max_L, num=number_points)
 transmission_coefficients = np.linspace(start=min_T, stop=max_T, num=number_points)
@@ -37,7 +37,7 @@ bandwidth_meshgrid = bandwidth(cavity_length=L, transmission_coefficient=T) * 1e
 clev = np.arange(bandwidth_meshgrid.min(), bandwidth_meshgrid.max(), 0.1)
 
 # Find couple (L, T) such that Delta within range
-central_freq = 10  # MHz
+central_freq = 6  # MHz
 threshold = 0.1
 boundary_down = central_freq - threshold * central_freq
 boundary_up = central_freq + threshold * central_freq
@@ -64,6 +64,7 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 matplotlib.rcParams['mathtext.fontset'] = 'cm'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
 
+alpha = 0.3
 # Set cmap
 cmap = matplotlib.colormaps['plasma']  # define the colormap
 # cmaplist = [cmap(i) for i in range(cmap.N)]  # extract all colors from the .jet map
@@ -102,8 +103,8 @@ cbar.outline.set_visible(False)
 # cbar.ax.axhline(y=boundary_down, color='white', linewidth=1, alpha=0.5)
 # print(cbar.get_ticks())
 # cbar.ax.axhline(y=boundary_up, color='white', linewidth=1, alpha=0.5)
-cbar.ax.axhline(y=central_freq, color='white', linewidth=50, alpha=0.5)
-ax.plot(length_range, transmission_range, c='white', alpha=0.5)
+cbar.ax.axhline(y=central_freq, color='white', linewidth=50, alpha=alpha)
+ax.plot(length_range, transmission_range, c='white', alpha=alpha)
 # Set label
 # original_ticks = list(cbar.get_ticks())
 # cbar.set_ticks(original_ticks + [central_freq])
