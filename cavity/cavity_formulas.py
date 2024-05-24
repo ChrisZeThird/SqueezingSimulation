@@ -122,9 +122,8 @@ def Beam_waist(d_curved, L, cavity_width, R, l_crystal, index_crystal=1, wavelen
     rayleigh_length, valid_indices = Rayleigh_length(A, B, C, D)
 
     w1 = np.sqrt((wavelength / np.pi) * rayleigh_length)
-    # print(w1.shape, rayleigh_length[valid_indices].shape, A.shape)
     # w2 = np.sqrt(A[valid_indices]**2 + (B[valid_indices] / rayleigh_length)**2) * w1
-    w2 = np.sqrt((C * rayleigh_length) ** 2 + D[valid_indices]) * w1 / index_crystal
+    w2 = (1 / (np.sqrt((C * rayleigh_length) ** 2 + D[valid_indices]))) * w1 / index_crystal
 
     return w1, w2, valid_indices
 
@@ -137,7 +136,7 @@ def finding_diagonal_tamagawa(L, cavity_width):
     :param cavity_width:
     :return:
     """
-    return (L / 4) + (cavity_width ** 2) / L
+    return (L / 4) + ((cavity_width ** 2) / L)
 
 
 def finding_flat_tamagawa(L, cavity_width, d_curved):
@@ -148,4 +147,4 @@ def finding_flat_tamagawa(L, cavity_width, d_curved):
     :param d_curved: Distance between curved mirrors
     :return:
     """
-    return (L / 2) - 2 * (cavity_width ** 2) + d_curved
+    return (L / 2) - (2 * (cavity_width ** 2)) + d_curved

@@ -8,7 +8,7 @@ from utils.settings import settings
 import utils.plot_parameters as mplp
 
 # -- SETTING PARAMETERS -- #
-plot_bandwidth = False
+plot_bandwidth = True
 plot_waist = True
 
 # Some constant
@@ -16,19 +16,19 @@ c = settings.c
 number_points = 300
 
 # Cavity length
-min_L = 0.1
+min_L = 0.25
 max_L = 2.0
 cavity_lengths = np.linspace(start=min_L, stop=max_L, num=number_points)
 
 # Transmission coefficient
-min_T = 0.1
-max_T = 1
+min_T = 0.01
+max_T = 0.5
 transmission_coefficients = np.linspace(start=min_T, stop=max_T, num=number_points, endpoint=False)  # avoid division by 0 in FSR/F
 
 L, T = np.meshgrid(cavity_lengths, transmission_coefficients)
 
 # Some fixed cavity parameters
-d_curved = np.linspace(start=0.01, stop=0.1, num=number_points)
+d_curved = np.linspace(start=1, stop=80, num=number_points) * 1e-3
 cavity_width = np.linspace(start=0.010, stop=0.020, num=10)
 
 R = 50e-3  # Radii of curvature
@@ -73,6 +73,7 @@ if plot_bandwidth:
 
     ax_bandwidth.set_xlabel('Cavity length L (m)')
     ax_bandwidth.set_ylabel('Transmission coefficient')
+    ax_bandwidth.set_title(f'Intra-cavity loss: L = {cavity_loss}')
     cbar.set_label(r'Bandwidth $\Delta$ (MHz)')
 
     plt.show()
@@ -87,7 +88,8 @@ w1, w2, valid_indices = cf.Beam_waist(d_curved=d_curved,
                        R=R,
                        l_crystal=crystal_length,
                        index_crystal=index_PPKTP,
-                       wavelength=wavelength)
+                       wavelength=wavelength,
+                       tamagawa=True)
 
 if plot_waist:
     fig_waist, ax1 = plt.subplots()

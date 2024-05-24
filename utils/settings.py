@@ -23,7 +23,7 @@ class Settings:
     array_points: int = 1000  # size of arrays
 
     # -- Universal constants -- #
-    c: float = 299792458.0  # speed of light (m/s)
+    c: float = 3e8  # speed of light (m/s)
 
     # -- Cavity characteristics -- #
     omega_c: float = 65000000.0            # bandwidth of the cavity
