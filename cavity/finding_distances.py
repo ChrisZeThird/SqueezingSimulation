@@ -22,21 +22,13 @@ def finding_unknown_distance(L, R, l, d_curved):
     :param d_curved: distance between curved mirrors, by default None
     :return: the unknown distances as well as the incident angles on the mirrors
     """
-    if d_curved is None:
-        raise ValueError(
-            'Both distances between flat mirrors and curved mirrors cannot be unknown. Please fix the distance between the curved mirror')
+    cos_theta = cos_theta_function(R, d_curved, l)
+    d_flat = L/(1 + (1/cos_theta)) - d_curved
+    OF = d_flat / (2 * cos_theta)
+    OC = d_curved / (2 * cos_theta)
+    S = (d_curved - l)/2 + OC + OF
 
-    else:
-        cos_theta = cos_theta_function(R, d_curved, l)
-        d_flat = L/(1 + (1/cos_theta)) - d_curved
-        OF = d_flat / (2 * cos_theta)
-        OC = d_curved / (2 * cos_theta)
-        S = (d_curved - l)/2 + OC + OF
-        # print('Calculated total length L: ', d_flat + d_curved + 2 * (OC + OF))
-        # print('Input total length L: ', L)
-        # print('--------------------------')
-        # print('Calculated equivalent cavity length S: ', S)
-        return d_flat, OF, OC, cos_theta, S
+    return d_flat, OF, OC, cos_theta, S
 
 
 # L = 64e-2

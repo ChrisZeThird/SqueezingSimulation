@@ -81,7 +81,7 @@ if plot_bandwidth:
 wavelength = 860e-9
 index_PPKTP = 1.8396  # refractive index
 
-w1, w2 = cf.Beam_waist(d_curved=d_curved,
+w1, w2, valid_indices = cf.Beam_waist(d_curved=d_curved,
                        L=500e-3,
                        cavity_width=15e-3,
                        R=R,
@@ -89,21 +89,21 @@ w1, w2 = cf.Beam_waist(d_curved=d_curved,
                        index_crystal=index_PPKTP,
                        wavelength=wavelength)
 
-legal_values_indices = np.where(w1 > 0)
-
 if plot_waist:
     fig_waist, ax1 = plt.subplots()
+
+    # print(d_curved[valid_indices].shape)
 
     color1 = 'tab:red'
     ax1.set_xlabel(r'Distance $d_{c}$ (m)')
     ax1.set_ylabel(r'Beam waist size $w_1$ (m)', color=color1)
-    ax1.plot(d_curved[legal_values_indices], w1[legal_values_indices], color=color1)
+    ax1.plot(d_curved[valid_indices], w1, color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
 
     ax2 = ax1.twinx()  # instantiate a second Axes that shares the same x-axis
     color2 = 'tab:blue'
     ax2.set_ylabel(r'Beam waist size $w_2$ (m)', color=color2)
-    ax2.plot(d_curved[legal_values_indices], w2[legal_values_indices], color=color2)
+    ax2.plot(d_curved[valid_indices], w2, color=color2)
     ax2.tick_params(axis='y', labelcolor=color2)
 
     fig_waist.tight_layout()  # otherwise the right y-label is slightly clipped

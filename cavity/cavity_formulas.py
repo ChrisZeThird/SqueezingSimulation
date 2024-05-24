@@ -68,7 +68,7 @@ def ABCD_Matrix(d_curved, d_flat, d_diag, R, l_crystal, index_crystal=1):
     :param index_crystal: Index of refraction of non-linear medium (by default 1)
     :return: Tuple (A, B, C, D)
     """
-    E = (- l_crystal / 2) + ((d_curved - l_crystal) / 2) * (1 / index_crystal)
+    E = (l_crystal / (2 * index_crystal)) + ((d_curved - l_crystal) / 2) * (1 / index_crystal)
     F = ((- 2 / R) * E) + (1 / index_crystal)
 
     A = 1 + (d_diag + d_flat / 2) * (- 2 / R)
@@ -86,13 +86,18 @@ def Rayleigh_length(A, B, C, D):
     :param B:
     :param C:
     :param D:
-    :return:
+    :return: tuple with the Rayleigh length and the corresponding indices with allowed values
     """
-    print(- (A * B) / (C * D) > 0)
-    return np.sqrt(- (A * B) / (C * D))
+    # print(- (A * B) / (C * D) > 0)
+    product = - (A * B) / (C * D)
+    temp = np.full(shape=A.shape, fill_value=np.nan, dtype=np.float32)
+
+    valid_indices = np.where(product >= 0)
+    temp[valid_indices] = np.sqrt(product[valid_indices])
+    return temp[valid_indices], valid_indices
 
 
-def Beam_waist(d_curved, L, cavity_width, R, l_crystal, index_crystal=1, wavelength=780e-9):
+def Beam_waist(d_curved, L, cavity_width, R, l_crystal, index_crystal=1, wavelength=780e-9, tamagawa=False):
     """
     Calculates the beam waist size in radius at the center of the nonlinear optical crystal and the intermediate
     between flat mirrors
@@ -103,22 +108,29 @@ def Beam_waist(d_curved, L, cavity_width, R, l_crystal, index_crystal=1, wavelen
     :param l_crystal: Length of non-linear crystal
     :param index_crystal: Index of refraction of non-linear medium (by default 1)
     :param wavelength:
-    :return: Tuple (w1, w2)
+    :param tamagawa: Boolean, to calculate missing distances with the formula from Tamagawa Vol.2-3
+    :return: Tuple (w1, w2, valid_indices)
     """
-    d_diag = finding_diagonal(L=L, cavity_width=cavity_width)
-    d_flat = finding_flat(L=L, cavity_width=cavity_width, d_curved=d_curved)
+    if tamagawa:
+        d_diag = finding_diagonal_tamagawa(L=L, cavity_width=cavity_width)
+        d_flat = finding_flat_tamagawa(L=L, cavity_width=cavity_width, d_curved=d_curved)
+    else:
+        d_flat, OF, OC, _, _ = fd.finding_unknown_distance(L=L, R=R, l=l_crystal, d_curved=d_curved)
+        d_diag = OF + OC
 
     A, B, C, D = ABCD_Matrix(d_curved, d_flat, d_diag, R, l_crystal, index_crystal=index_crystal)
-    rayleigh_length = Rayleigh_length(A, B, C, D)
+    rayleigh_length, valid_indices = Rayleigh_length(A, B, C, D)
 
     w1 = np.sqrt((wavelength / np.pi) * rayleigh_length)
-    w2 = np.sqrt(A**2 + (B / rayleigh_length)**2) * w1
+    # print(w1.shape, rayleigh_length[valid_indices].shape, A.shape)
+    # w2 = np.sqrt(A[valid_indices]**2 + (B[valid_indices] / rayleigh_length)**2) * w1
+    w2 = np.sqrt((C * rayleigh_length) ** 2 + D[valid_indices]) * w1 / index_crystal
 
-    return w1, w2
+    return w1, w2, valid_indices
 
 
 # -- Missing lengths -- #
-def finding_diagonal(L, cavity_width):
+def finding_diagonal_tamagawa(L, cavity_width):
     """
 
     :param L: Cavity length
@@ -128,7 +140,7 @@ def finding_diagonal(L, cavity_width):
     return (L / 4) + (cavity_width ** 2) / L
 
 
-def finding_flat(L, cavity_width, d_curved):
+def finding_flat_tamagawa(L, cavity_width, d_curved):
     """
 
     :param L: Cavity length
