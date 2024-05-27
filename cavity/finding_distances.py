@@ -31,9 +31,9 @@ def finding_unknown_distance(L, R, l, d_curved):
     return d_flat, OF, OC, cos_theta, S
 
 
-# L = 64e-2
-# d_curved = 11.6e-2
-# R = 10e-2
+# L = 500e-3
+# d_curved = 57.7e-3
+# R = 100e-3
 # l = 10e-3
 #
 # d_flat, OF, OC, cos_theta, S = finding_unknown_distance(L, R, l, d_curved)
@@ -70,13 +70,16 @@ def crystal_waist(L, R, d_curved, l, wavelength=780e-9):
     A = (L_prime - R / 2)
     B = ((S - L_prime) * L_prime - S * R / 2)
     C = (S - L_prime - R / 2)
+    # print(A, B, C)
     return np.sqrt(wavelength / np.pi) * ((- A * B) / C) ** (1 / 4)
 
 
+# print(crystal_waist(L=L, R=R, d_curved=d_curved, l=l, wavelength=860e-9))
+
 """ Checking some parameters """
-radii = np.array([25, 50, 100]) * 1e-3
-crystal_lengths = np.arange(start=5, stop=30, step=5) * 1e-3
-expected_waists = {"G. Hétet": 40e-6, "Appel": None, "T. Takahito": 20e-6, "Takao": 17e-6}
+# radii = np.array([25, 50, 100]) * 1e-3
+# crystal_lengths = np.arange(start=5, stop=30, step=5) * 1e-3
+# expected_waists = {"G. Hétet": 40e-6, "Appel": None, "T. Takahito": 20e-6, "Takao": 17e-6}
 
 # distance_crystal_mirror = (d_curved - l)/2
 # print('Crystal waist: ', crystal_waist(L=distance_crystal_mirror, R=R, S=S, wavelength=795e-9))

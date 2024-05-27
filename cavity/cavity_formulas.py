@@ -68,13 +68,36 @@ def ABCD_Matrix(d_curved, d_flat, d_diag, R, l_crystal, index_crystal=1):
     :param index_crystal: Index of refraction of non-linear medium (by default 1)
     :return: Tuple (A, B, C, D)
     """
-    E = (l_crystal / (2 * index_crystal)) + ((d_curved - l_crystal) / 2) * (1 / index_crystal)
-    F = ((- 2 / R) * E) + (1 / index_crystal)
+    n = np.size(d_curved)
+    one = np.ones(n)
+    zero = np.zeros(n)
 
-    A = 1 + (d_diag + d_flat / 2) * (- 2 / R)
-    B = E + (d_diag + d_flat / 2) * F
-    C = - 2 / R
-    D = F
+    M1 = np.array([[one, d_diag + d_flat / 2], [zero, one]])
+    M2 = np.array([[one, zero], [-2 / R * one, one]])
+    M3 = np.array([[one, (d_curved - l_crystal) / 2], [zero, one]])
+    M4 = np.array([[one, zero], [zero, one / index_crystal]])
+    M5 = np.array([[one, l_crystal / (2 * index_crystal) * one], [zero, one]])
+
+    print(M1.shape, M2.shape, M3.shape, M4.shape, M5.shape)
+
+    axis = 1
+    ABCD = np.empty((2, 2, n))
+    for i in range(n):
+        # ABCD[:, :, i] = np.matmul(np.matmul(np.matmul(np.matmul(M1[:, :, i], M2[:, :, i]), M3[:, :, i]), M4[:, :, i]), M5[:, :, i])
+        ABCD[:, :, i] = M1[:, :, i] @ M2[:, :, i] @ M3[:, :, i] @ M4[:, :, i] @ M5[:, :, i]
+
+    # E = (l_crystal / (2 * index_crystal)) + ((d_curved - l_crystal) / 2) * (1 / index_crystal)
+    # F = ((- 2 / R) * E) + (1 / index_crystal)
+    # # F = ((- 2 / R) * E)
+    #
+    # A = 1 + (d_diag + (d_flat / 2)) * (- 2 / R)
+    # B = E + (d_diag + (d_flat / 2)) * F
+    # # B = ((d_diag + (d_flat / 2)) + 1) * E
+    # C = - 2 / R
+    # D = F
+
+    A, B, C, D = ABCD[0, 0, :], ABCD[0, 1, :], ABCD[1, 0, :], ABCD[1, 1, :]
+    print(A.shape, B.shape, C.shape, D.shape)
 
     return A, B, C, D
 
@@ -92,7 +115,7 @@ def Rayleigh_length(A, B, C, D):
     product = - (A * B) / (C * D)
     temp = np.full(shape=A.shape, fill_value=np.nan, dtype=np.float32)
 
-    valid_indices = np.where(product >= 0)
+    valid_indices = np.where(product >= 0)  # ensures the square root is taken for positive terms only
     temp[valid_indices] = np.sqrt(product[valid_indices])
     return temp[valid_indices], valid_indices
 
@@ -119,11 +142,12 @@ def Beam_waist(d_curved, L, cavity_width, R, l_crystal, index_crystal=1, wavelen
         d_diag = OF + OC
 
     A, B, C, D = ABCD_Matrix(d_curved, d_flat, d_diag, R, l_crystal, index_crystal=index_crystal)
+    # print(np.shape(A), np.shape(B), type(C), np.shape(D))
     rayleigh_length, valid_indices = Rayleigh_length(A, B, C, D)
 
     w1 = np.sqrt((wavelength / np.pi) * rayleigh_length)
-    # w2 = np.sqrt(A[valid_indices]**2 + (B[valid_indices] / rayleigh_length)**2) * w1
-    w2 = (1 / (np.sqrt((C * rayleigh_length) ** 2 + D[valid_indices]))) * w1 / index_crystal
+    w2 = np.sqrt((A[valid_indices]) ** 2 + (B[valid_indices] / rayleigh_length)**2) * w1 * index_crystal
+    # w2 = (1 / (np.sqrt((C * rayleigh_length) ** 2 + D[valid_indices]))) * w1 / index_crystal
 
     return w1, w2, valid_indices
 
