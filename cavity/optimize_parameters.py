@@ -13,7 +13,7 @@ plot_waist = True
 
 # Some constant
 c = settings.c
-number_points = 300
+number_points = 500
 
 # Cavity length
 min_L = 0.25
@@ -28,7 +28,7 @@ transmission_coefficients = np.linspace(start=min_T, stop=max_T, num=number_poin
 L, T = np.meshgrid(cavity_lengths, transmission_coefficients)
 
 # Some fixed cavity parameters
-d_curved = np.linspace(start=0, stop=80, num=number_points) * 1e-3
+d_curved = np.linspace(start=0, stop=100, num=number_points) * 1e-3
 cavity_width = np.linspace(start=0.010, stop=0.020, num=10)
 
 R = 50e-3  # Radii of curvature
@@ -81,32 +81,48 @@ if plot_bandwidth:
 # -- OPTIMIZE LENGTHS -- #
 wavelength = 860e-9
 index_PPKTP = 1.8396  # refractive index
+fixed_length = 500e-3
+R = 50e-3
 
-w1, w2, valid_indices = cf.Beam_waist(d_curved=d_curved,
-                       L=500e-3,
-                       cavity_width=15e-3,
-                       R=R,
-                       l_crystal=crystal_length,
-                       index_crystal=index_PPKTP,
-                       wavelength=wavelength,
-                       tamagawa=False)
+# w1, w2, valid_indices = cf.Beam_waist(d_curved=d_curved,
+#                        L=500e-3,
+#                        cavity_width=15e-3,
+#                        R=R,
+#                        l_crystal=crystal_length,
+#                        index_crystal=index_PPKTP,
+#                        wavelength=wavelength,
+#                        tamagawa=False)
+
+d_flat, OF, OC, _, _ = fd.finding_unknown_distance(L=fixed_length, R=R, l=crystal_length, d_curved=d_curved)
+A, B, C, D = cf.ABCD_Matrix(d_curved=d_curved, d_flat=d_flat, d_diag=OF + OC, R=R, l_crystal=crystal_length, index_crystal=index_PPKTP)
+waist, index = cf.waist_from_q(A=A, B=B, C=C, D=D, wavelength=wavelength, crystal_index=index_PPKTP)
+
+# print(d_curved[:10], d_flat[:10])  # checking d_curved < d_flat
 
 if plot_waist:
     fig_waist, ax1 = plt.subplots()
 
     # print(d_curved[valid_indices].shape)
 
-    color1 = 'tab:red'
+    # color1 = 'tab:black'
     ax1.set_xlabel(r'Distance $d_{c}$ (m)')
-    ax1.set_ylabel(r'Beam waist size $w_1$ (mm)', color=color1)
-    ax1.plot(d_curved[valid_indices], w1 * 1e3, color=color1)
-    ax1.tick_params(axis='y', labelcolor=color1)
+    ax1.set_ylabel(r'Beam waist size $w_0$ (mm)')
+    # print(d_curved[index].shape, waist.shape)
+    ax1.plot(d_curved[index], waist * 1e3)
+    # ax1.plot(d_curved, waist * 1e3)
+    ax1.tick_params(axis='y')
 
-    ax2 = ax1.twinx()  # instantiate a second Axes that shares the same x-axis
-    color2 = 'tab:blue'
-    ax2.set_ylabel(r'Beam waist size $w_2$ (mm)', color=color2)
-    ax2.plot(d_curved[valid_indices], w2 * 1e3, color=color2)
-    ax2.tick_params(axis='y', labelcolor=color2)
+    # color1 = 'tab:red'
+    # ax1.set_xlabel(r'Distance $d_{c}$ (m)')
+    # ax1.set_ylabel(r'Beam waist size $w_1$ (mm)', color=color1)
+    # ax1.plot(d_curved[valid_indices], w1 * 1e3, color=color1)
+    # ax1.tick_params(axis='y', labelcolor=color1)
+
+    # ax2 = ax1.twinx()  # instantiate a second Axes that shares the same x-axis
+    # color2 = 'tab:blue'
+    # ax2.set_ylabel(r'Beam waist size $w_2$ (mm)', color=color2)
+    # ax2.plot(d_curved[valid_indices], w2 * 1e3, color=color2)
+    # ax2.tick_params(axis='y', labelcolor=color2)
 
     fig_waist.tight_layout()  # otherwise the right y-label is slightly clipped
     plt.show()

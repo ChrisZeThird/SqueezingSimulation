@@ -75,16 +75,16 @@ def ABCD_Matrix(d_curved, d_flat, d_diag, R, l_crystal, index_crystal=1):
     M1 = np.array([[one, d_diag + d_flat / 2], [zero, one]])
     M2 = np.array([[one, zero], [-2 / R * one, one]])
     M3 = np.array([[one, (d_curved - l_crystal) / 2], [zero, one]])
-    M4 = np.array([[one, zero], [zero, one / index_crystal]])
-    M5 = np.array([[one, l_crystal / (2 * index_crystal) * one], [zero, one]])
+    Unity = np.array([[one, zero], [zero, one]])  # air to crystal and crystal to air
+    M4 = np.array([[one, l_crystal / index_crystal * one], [zero, one]])
 
-    print(M1.shape, M2.shape, M3.shape, M4.shape, M5.shape)
+    # print(M1.shape, M2.shape, M3.shape, M4.shape, M5.shape)
 
     axis = 1
     ABCD = np.empty((2, 2, n))
     for i in range(n):
         # ABCD[:, :, i] = np.matmul(np.matmul(np.matmul(np.matmul(M1[:, :, i], M2[:, :, i]), M3[:, :, i]), M4[:, :, i]), M5[:, :, i])
-        ABCD[:, :, i] = M1[:, :, i] @ M2[:, :, i] @ M3[:, :, i] @ M4[:, :, i] @ M5[:, :, i]
+        ABCD[:, :, i] = M1[:, :, i] @ M2[:, :, i] @ M3[:, :, i] @ Unity[:, :, i] @ M4[:, :, i] @ Unity[:, :, i] @ M3[:, :, i] @ M2[:, :, i] @ M1[:, :, i]
 
     # E = (l_crystal / (2 * index_crystal)) + ((d_curved - l_crystal) / 2) * (1 / index_crystal)
     # F = ((- 2 / R) * E) + (1 / index_crystal)
@@ -97,7 +97,8 @@ def ABCD_Matrix(d_curved, d_flat, d_diag, R, l_crystal, index_crystal=1):
     # D = F
 
     A, B, C, D = ABCD[0, 0, :], ABCD[0, 1, :], ABCD[1, 0, :], ABCD[1, 1, :]
-    print(A.shape, B.shape, C.shape, D.shape)
+    # print(A*B - D*C)
+    # print(A.shape, B.shape, C.shape, D.shape)
 
     return A, B, C, D
 
@@ -172,3 +173,37 @@ def finding_flat_tamagawa(L, cavity_width, d_curved):
     :return:
     """
     return (L / 2) - (2 * (cavity_width ** 2)) + d_curved
+
+
+# -- Trying another straight forward method -- #
+def q_parameter(A, B, C, D):
+    """
+    Computes the real and imaginary parts of the q-parameter of a Gaussian beam in a cavity
+    :param A:
+    :param B:
+    :param C:
+    :param D:
+    :return: Tuple, Re and Im of q and Index for allowed values
+    """
+    # Condition such that q has an imaginary par
+    index = np.where(((D - A)**2 < np.absolute(4 * C * B)) & (C * B < 0))
+
+    Re = - (D[index] - A[index]) / (2 * C[index])
+    Im = 2 * np.absolute(B[index]) * np.sqrt(np.absolute((D[index] - A[index])**2 / (4 * C[index] * B[index]) + 1))
+
+    return Re, Im, index
+
+
+def waist_from_q(A, B, C, D, wavelength, crystal_index):
+    """
+    Calculates the waist from the imaginary part of the q-parameter
+    :param A:
+    :param B:
+    :param C:
+    :param D:
+    :param wavelength:
+    :param crystal_index:
+    :return:
+    """
+    _, Im, index = q_parameter(A=A, B=B, C=C, D=D)
+    return np.sqrt(wavelength * Im / (np.pi * crystal_index)), index
