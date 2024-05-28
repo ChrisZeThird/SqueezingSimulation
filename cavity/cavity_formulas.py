@@ -138,6 +138,9 @@ def Beam_waist(d_curved, L, cavity_width, R, l_crystal, index_crystal=1, wavelen
     if tamagawa:
         d_diag = finding_diagonal_tamagawa(L=L, cavity_width=cavity_width)
         d_flat = finding_flat_tamagawa(L=L, cavity_width=cavity_width, d_curved=d_curved)
+        # print('d_diag: ', d_diag)
+        # print('d_flat: ', d_flat)
+        # print('-----------------------------')
     else:
         d_flat, OF, OC, _, _ = fd.finding_unknown_distance(L=L, R=R, l=l_crystal, d_curved=d_curved)
         d_diag = OF + OC
@@ -178,20 +181,21 @@ def finding_flat_tamagawa(L, cavity_width, d_curved):
 # -- Trying another straight forward method -- #
 def q_parameter(A, B, C, D):
     """
-    Computes the real and imaginary parts of the q-parameter of a Gaussian beam in a cavity
+    Computes the real and imaginary parts of the 1 / q-parameter of a Gaussian beam in a cavity
     :param A:
     :param B:
     :param C:
     :param D:
     :return: Tuple, Re and Im of q and Index for allowed values
     """
-    # Condition such that q has an imaginary par
-    index = np.where(((D - A)**2 < np.absolute(4 * C * B)) & (C * B < 0))
+    # Condition such that q has an imaginary part only
+    threshold = 1e-2
+    index = np.where(((A + D)**2 < 4) & ((A - D) < threshold) & ((A - D) > - threshold))  # negative delta and pure imaginary 1/q
 
-    Re = - (D[index] - A[index]) / (2 * C[index])
-    Im = 2 * np.absolute(B[index]) * np.sqrt(np.absolute((D[index] - A[index])**2 / (4 * C[index] * B[index]) + 1))
+    # Re = - (D[index] - A[index]) / (2 * C[index])
+    Im = np.sqrt(np.absolute(A[index] ** 2 - 1)) / np.absolute(B[index])
 
-    return Re, Im, index
+    return Im, index
 
 
 def waist_from_q(A, B, C, D, wavelength, crystal_index):
@@ -205,5 +209,18 @@ def waist_from_q(A, B, C, D, wavelength, crystal_index):
     :param crystal_index:
     :return:
     """
-    _, Im, index = q_parameter(A=A, B=B, C=C, D=D)
+    Im, index = q_parameter(A=A, B=B, C=C, D=D)
     return np.sqrt(wavelength * Im / (np.pi * crystal_index)), index
+
+
+# -- Kaertner classnotes -- #
+def waist_mirror1(R1, R2, L, wavelength):
+    return (((wavelength * R1) / np.pi) ** 2 * ((R2 - L) / (R1 - L)) * (L / (R1 + R2 - L))) ** (1 / 4)
+
+
+def waist_mirror3(R1, R2, L, wavelength):
+    return (((wavelength * R2) / np.pi) ** 2 * ((R1 - L) / (R2 - L)) * (L / (R1 + R2 - L))) ** (1 / 4)
+
+
+def waist_intracavity(R1, R2, L, wavelength):
+    return ((wavelength / np.pi) ** 2 * (L * (R1 - L) * (R2 - L) * (R1 + R2 - L) / ((R1 + R2 - 2 * L) ** 2))) ** (1 / 4)
