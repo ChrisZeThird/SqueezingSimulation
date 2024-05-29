@@ -72,11 +72,23 @@ def ABCD_Matrix(d_curved, d_flat, d_diag, R, l_crystal, index_crystal=1):
     one = np.ones(n)
     zero = np.zeros(n)
 
-    M1 = np.array([[one, d_diag + d_flat / 2], [zero, one]])
-    M2 = np.array([[one, zero], [-2 / R * one, one]])
-    M3 = np.array([[one, (d_curved - l_crystal) / 2], [zero, one]])
-    Unity = np.array([[one, zero], [zero, one]])  # air to crystal and crystal to air
-    M4 = np.array([[one, l_crystal / index_crystal * one], [zero, one]])
+    # set lengths and focals
+    f = R / 2
+    free_propagation_flat = d_flat + 2 * d_diag
+    free_propagation_curved = (d_curved - l_crystal) / 2
+    free_propagation_crystal = l_crystal / index_crystal
+
+    # M1 = np.array([[one, d_diag + d_flat / 2], [zero, one]])
+    # M2 = np.array([[one, zero], [-2 / R * one, one]])
+    # M3 = np.array([[one, (d_curved - l_crystal) / 2], [zero, one]])
+    # Unity = np.array([[one, zero], [zero, one]])  # air to crystal and crystal to air
+    # M4 = np.array([[one, l_crystal / index_crystal * one], [zero, one]])
+
+    M1 = np.array([[one, zero], [- 1 / (2 * f) * one, one]])
+    M2 = np.array([[one, free_propagation_flat], [zero, one]])
+    M3 = np.array([[one, zero], [- 1 / f * one, one]])
+    M4 = np.array([[one, free_propagation_curved], [zero, one]])
+    M5 = np.array([[one, free_propagation_crystal * one], [zero, one]])
 
     # print(M1.shape, M2.shape, M3.shape, M4.shape, M5.shape)
 
@@ -84,7 +96,7 @@ def ABCD_Matrix(d_curved, d_flat, d_diag, R, l_crystal, index_crystal=1):
     ABCD = np.empty((2, 2, n))
     for i in range(n):
         # ABCD[:, :, i] = np.matmul(np.matmul(np.matmul(np.matmul(M1[:, :, i], M2[:, :, i]), M3[:, :, i]), M4[:, :, i]), M5[:, :, i])
-        ABCD[:, :, i] = M1[:, :, i] @ M2[:, :, i] @ M3[:, :, i] @ Unity[:, :, i] @ M4[:, :, i] @ Unity[:, :, i] @ M3[:, :, i] @ M2[:, :, i] @ M1[:, :, i]
+        ABCD[:, :, i] = M1[:, :, i] @ M2[:, :, i] @ M3[:, :, i]  @ M4[:, :, i] @ M5[:, :, i] @ M4[:, :, i] @  M3[:, :, i]
 
     # E = (l_crystal / (2 * index_crystal)) + ((d_curved - l_crystal) / 2) * (1 / index_crystal)
     # F = ((- 2 / R) * E) + (1 / index_crystal)
@@ -103,6 +115,7 @@ def ABCD_Matrix(d_curved, d_flat, d_diag, R, l_crystal, index_crystal=1):
     return A, B, C, D
 
 
+# -- Tamagawa -- #
 def Rayleigh_length(A, B, C, D):
     """
     Calculate Rayleigh length from ABCD matrix elements of beam waist at the crystal center
@@ -189,7 +202,7 @@ def q_parameter(A, B, C, D):
     :return: Tuple, Re and Im of q and Index for allowed values
     """
     # Condition such that q has an imaginary part only
-    threshold = 1e-2
+    threshold = 1e-1
     index = np.where(((A + D)**2 < 4) & ((A - D) < threshold) & ((A - D) > - threshold))  # negative delta and pure imaginary 1/q
 
     # Re = - (D[index] - A[index]) / (2 * C[index])
@@ -224,3 +237,14 @@ def waist_mirror3(R1, R2, L, wavelength):
 
 def waist_intracavity(R1, R2, L, wavelength):
     return ((wavelength / np.pi) ** 2 * (L * (R1 - L) * (R2 - L) * (R1 + R2 - L) / ((R1 + R2 - 2 * L) ** 2))) ** (1 / 4)
+
+
+# -- Loosing my mind over this -- #
+def brute_force(d_curved, l_crystal, index_crystal):
+    """
+
+    :param d_curved:
+    :param l_crystal:
+    :param index_crystal:
+    :return:
+    """

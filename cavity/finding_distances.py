@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -70,8 +71,10 @@ def crystal_waist(L, R, d_curved, l, wavelength=780e-9):
     A = (L_prime - R / 2)
     B = ((S - L_prime) * L_prime - S * R / 2)
     C = (S - L_prime - R / 2)
+    temp = A * B / C
+    index = np.where((temp < 0))
     # print(A, B, C)
-    return np.sqrt(wavelength / np.pi) * ((- A * B) / C) ** (1 / 4)
+    return np.sqrt(wavelength / np.pi) * ((- A[index] * B[index]) / C[index]) ** (1 / 4), index
 
 
 # print(crystal_waist(L=L, R=R, d_curved=d_curved, l=l, wavelength=860e-9))
@@ -84,3 +87,13 @@ def crystal_waist(L, R, d_curved, l, wavelength=780e-9):
 # distance_crystal_mirror = (d_curved - l)/2
 # print('Crystal waist: ', crystal_waist(L=distance_crystal_mirror, R=R, S=S, wavelength=795e-9))
 
+R = 50e-3
+L = 500e-3
+d_curved = np.linspace(0, 100e-3, num=200)
+crystal_length = 15e-3
+wavelength = 860e-6
+
+waist, index = crystal_waist(L, R, d_curved, crystal_length, wavelength)
+
+plt.plot(d_curved[index], waist)
+plt.show()
