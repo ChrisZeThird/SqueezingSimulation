@@ -1,5 +1,7 @@
 import json
+import matplotlib.pyplot as plt
 from numpy import pi, sin
+import numpy as np
 
 from utils.settings import settings
 

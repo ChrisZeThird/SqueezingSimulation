@@ -72,14 +72,14 @@ def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=1):
     E = (L - d_curved) / 2
 
     A1 = 1 - (2 / R) * E
-    B1 = A1 * ((l_crystal/(2 * index_crystal)) + (d_curved - l_crystal) / 2) + E
+    B1 = A1 * ((l_crystal / 2) + (d_curved - l_crystal) / 2) + E
     C1 = - 2 / R
     D1 = (1 / index_crystal) * (C1 * (d_curved - l_crystal) / 2 + 1)
 
     return A1, B1, C1, D1
 
 
-# -- Tamagawa -- #
+# -- Tamagawa / Svelto -- #
 def Beam_waist(d_curved, L, R, l_crystal, index_crystal=1, wavelength=780e-9):
     """
     Calculates the beam waist size in radius at the center of the nonlinear optical crystal and the intermediate
@@ -112,61 +112,15 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=1, wavelength=780e-9):
     return w1, w2, valid_indices_1, valid_indices_2
 
 
-# -- Missing lengths -- #
-def finding_diagonal_tamagawa(L, cavity_width):
+def rayleigh_range(waist, wavelength, refraction_index):
     """
 
-    :param L: Cavity length
-    :param cavity_width:
-    :return:
-    """
-    return (L / 4) + ((cavity_width ** 2) / L)
-
-
-def finding_flat_tamagawa(L, cavity_width, d_curved):
-    """
-
-    :param L: Cavity length
-    :param cavity_width:
-    :param d_curved: Distance between curved mirrors
-    :return:
-    """
-    return (L / 2) - (2 * (cavity_width ** 2)) + d_curved
-
-
-# -- Trying another straight forward method -- #
-def q_parameter(A, B, C, D):
-    """
-    Computes the real and imaginary parts of the 1 / q-parameter of a Gaussian beam in a cavity
-    :param A:
-    :param B:
-    :param C:
-    :param D:
-    :return: Tuple, Re and Im of q and Index for allowed values
-    """
-    # Condition such that q has an imaginary part only
-    threshold = 1e-1
-    index = np.where(((A + D)**2 < 4) & ((A - D) < threshold) & ((A - D) > - threshold))  # negative delta and pure imaginary 1/q
-
-    # Re = - (D[index] - A[index]) / (2 * C[index])
-    Im = np.sqrt(np.absolute(A[index] ** 2 - 1)) / np.absolute(B[index])
-
-    return Im, index
-
-
-def waist_from_q(A, B, C, D, wavelength, crystal_index):
-    """
-    Calculates the waist from the imaginary part of the q-parameter
-    :param A:
-    :param B:
-    :param C:
-    :param D:
+    :param waist:
     :param wavelength:
-    :param crystal_index:
+    :param refraction_index:
     :return:
     """
-    Im, index = q_parameter(A=A, B=B, C=C, D=D)
-    return np.sqrt(wavelength * Im / (np.pi * crystal_index)), index
+    return np.pi * refraction_index * (waist ** 2) / wavelength
 
 
 # -- Kaertner classnotes -- #
@@ -180,3 +134,28 @@ def waist_mirror3(R1, R2, L, wavelength):
 
 def waist_intracavity(R1, R2, L, wavelength):
     return ((wavelength / np.pi) ** 2 * (L * (R1 - L) * (R2 - L) * (R1 + R2 - L) / ((R1 + R2 - 2 * L) ** 2))) ** (1 / 4)
+
+
+# -- Laurat / Boyd -- #
+def effective_length(L, l, refractive_index):
+    """
+    Calculates the effective length of a cavity with a non-linear crystal of length l and index n
+    :param L:
+    :param l:
+    :param refractive_index:
+    :return:
+    """
+    return L - l * (1 - 1/refractive_index)
+
+
+def effective_Rayleigh_length(L, l, refractive_index, R):
+    """
+    New Rayleigh length for OPO
+    :param L:
+    :param l:
+    :param refractive_index:
+    :param R:
+    :return:
+    """
+    eff_length = effective_length(L, l, refractive_index)
+    return np.sqrt(eff_length * (R - eff_length))
