@@ -1,4 +1,5 @@
 import matplotlib
+from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -13,7 +14,7 @@ plot_waist = True
 
 # Some constant
 c = settings.c
-number_points = 500
+number_points = 1000
 
 # Cavity length
 min_L = 0.25
@@ -79,53 +80,59 @@ if plot_bandwidth:
     plt.show()
 
 # -- OPTIMIZE LENGTHS -- #
-wavelength = 860e-9
+wavelength = 780e-9
 index_PPKTP = 1.8396  # refractive index
-fixed_length = 500e-3
+fixed_length = 400e-3
 R = 50e-3
 
-w1, w2, valid_indices = cf.Beam_waist(d_curved=d_curved,
-                       L=500e-3,
-                       cavity_width=15e-3,
-                       R=R,
-                       l_crystal=crystal_length,
-                       index_crystal=index_PPKTP,
-                       wavelength=wavelength,
-                       tamagawa=True)
+w1, w2, valid_indices_1, valid_indices_2 = cf.Beam_waist(d_curved=d_curved,
+                                                       L=500e-3,
+                                                       R=R,
+                                                       l_crystal=crystal_length,
+                                                       index_crystal=index_PPKTP,
+                                                       wavelength=wavelength)
 
-d_flat, OF, OC, _, _ = fd.finding_unknown_distance(L=fixed_length, R=R, l=crystal_length, d_curved=d_curved)
-A, B, C, D = cf.ABCD_Matrix(d_curved=d_curved, d_flat=d_flat, d_diag=OF + OC, R=R, l_crystal=crystal_length, index_crystal=index_PPKTP)
-waist, index = cf.waist_from_q(A=A, B=B, C=C, D=D, wavelength=wavelength, crystal_index=index_PPKTP)
-
-# print(d_curved[:10], d_flat[:10])  # checking d_curved < d_flat
+# rayleigh_range_1 = cf.rayleigh_range(w1, wavelength=wavelength, refraction_index=index_PPKTP)
 
 if plot_waist:
-    fig_waist, ax1 = plt.subplots()
+    fig_waist, ax1 = plt.subplots(figsize=(10, 10))
 
-    # print(d_curved[valid_indices].shape)
-
-    # ax1.set_xlabel(r'Distance $d_{c}$ (m)')
-    # ax1.set_ylabel(r'Beam waist size $w_0$ (mm)')
-    # # print(d_curved[index].shape, waist.shape)
-    # ax1.plot(d_curved[index], waist * 1e3)
-    # # ax1.plot(d_curved, waist * 1e3)
-    # ax1.tick_params(axis='y')
-
+    # Add waist 1
     color1 = 'tab:red'
     ax1.set_xlabel(r'Distance $d_{c}$ (m)')
     ax1.set_ylabel(r'Beam waist size $w_1$ (mm)', color=color1)
-    ax1.plot(d_curved[valid_indices], w1 * 1e3, color=color1)
+    ax1.plot(d_curved[valid_indices_1], w1[valid_indices_1] * 1e3, color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
 
+    # Annotate maximum value
+    max_index = np.argmax(w1[valid_indices_1])
+    min_index = np.argmin(w1[valid_indices_1])
+    x_max = d_curved[valid_indices_1][max_index]
+    y_max = w1[valid_indices_1][max_index] * 1e3
+    y_min = w1[valid_indices_1][min_index] * 1e3
+    ax1.vlines(x=x_max, ymin=y_min, ymax=y_max, color='r', linestyles='--')
+    ax1.hlines(y=y_max, xmin=d_curved[valid_indices_1][0], xmax=x_max, color='r', linestyles='--')
+    ax1.plot(x_max, y_max, color='r', marker='o')
+    ax1.text(x_max, y_max + 0.0005, r'$(d_{c}, w_1) = $' + f'({x_max:.3f}, {y_max:.3f})', color='r')
+
+    # Add waist 2
     ax2 = ax1.twinx()  # instantiate a second Axes that shares the same x-axis
     color2 = 'tab:blue'
     ax2.set_ylabel(r'Beam waist size $w_2$ (mm)', color=color2)
-    ax2.plot(d_curved[valid_indices], w2 * 1e3, color=color2)
+    ax2.plot(d_curved[valid_indices_2], w2[valid_indices_2] * 1e3, color=color2)
     ax2.tick_params(axis='y', labelcolor=color2)
+
+    # Add a text box for the parameters
+    box_text = f"Cavity length: {fixed_length * 1e3} mm \nMirror radius: {R * 1e3} mm"
+    text_box = AnchoredText(box_text, frameon=True, loc=4, pad=0.5)
+    plt.setp(text_box.patch, facecolor='white', alpha=0.5)
+    plt.gca().add_artist(text_box)
 
     fig_waist.tight_layout()  # otherwise the right y-label is slightly clipped
     plt.show()
 
+
+# -- Kaertner class notes -- #
 kaertner = False
 
 if kaertner:
