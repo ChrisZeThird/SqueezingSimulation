@@ -12,10 +12,10 @@ c = settings.c
 # Setting parameters
 number_points = 300
 
-min_L = 0.5
-max_L = 3.0
-min_T = 0
-max_T = 1
+min_L = 0.2
+max_L = 1.
+min_T = 0.1
+max_T = 0.3
 cavity_lengths = np.linspace(start=min_L, stop=max_L, num=number_points)
 transmission_coefficients = np.linspace(start=min_T, stop=max_T, num=number_points)
 
