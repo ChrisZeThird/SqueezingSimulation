@@ -1,5 +1,8 @@
 import json
+import matplotlib.pyplot as plt
 from numpy import pi, sin
+import numpy as np
+
 from utils.settings import settings
 
 
@@ -44,3 +47,7 @@ def load_crystal_coefficients(filename, crystal_name):
             raise ValueError(f"Crystal '{crystal_name}' not found in the JSON file. Available crystals: {available_crystals}")
         return coefficients
 
+
+# Approximate number to the next tenth
+def approximate_to_next_ten(number):
+    return round(number, -1)
