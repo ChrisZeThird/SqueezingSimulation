@@ -1,6 +1,7 @@
 import argparse
 from dataclasses import asdict, dataclass
 from typing import Any
+import os
 
 import configargparse
 from numpy import inf
@@ -32,14 +33,12 @@ class Settings:
     c: float = 3e8  # speed of light (m/s)
 
     # -- Cavity characteristics -- #
-    fixed_length = 600e-3  # reference length value
+    fixed_length: float = 600e-3  # reference length value
     min_L: float = 200e-3
     max_L: float = 100e-3
 
     omega_c: float = 65000000.0             # bandwidth of the cavity
-    transmission_coeff: float = 0.9         # transmission coefficient of the mirrors
     cavity_loss: float = 0.004              # fictitious beam-splitter coefficient
-    escape_efficiency: float = 1.0          # proba that if 1 photon escapes it's by output coupler (not due to loss)
     threshold: float = 1.0                  # denotes epsilon
 
     # -- Transmission coefficients -- #
@@ -59,10 +58,6 @@ class Settings:
     # -- Crystal -- #
     crystal_length: int = 10e-3
     crystal_index: float = 1.8396  # PPKTP refraction index
-    width: float = 3e-6
-    height: float = 3e-6
-    grating: type(float('inf')) = inf
-    temperature: float = 25.0
 
     def __init__(self):
         """
@@ -74,6 +69,7 @@ class Settings:
         """
         Load settings from local file and arguments of the command line.
         """
+
         def str_to_bool(arg_value: str) -> bool:
             """
             Used to handle boolean settings.
@@ -98,12 +94,11 @@ class Settings:
                     return str
                 else:
                     return type_mapping(arg_value[0])
-            if type(arg_value) == float:
-                return float
-            if type(arg_value) == int:
-                return int
 
-        p = configargparse.get_argument_parser(default_config_files=['./settings.yaml'])
+            # Default same as current value
+            return type(arg_value)
+
+        p = configargparse.ArgParser(default_config_files=['./settings.yaml'])
 
         # Spacial argument
         p.add_argument('-s', '--settings', required=False, is_config_file=True,
@@ -119,7 +114,18 @@ class Settings:
                            type=type_mapping(value))
 
         # Load arguments from file, environment and command line to override the defaults
-        for name, value in vars(p.parse_args()).items():
+        parsed_args = p.parse_args()
+
+        # Debug: Print the content of the YAML file
+        # print("Content of the YAML file:")
+        # print(os.getcwd())
+        # try:
+        #     with open('./settings.yaml', 'r') as f:
+        #         print(f.read())
+        # except Exception as e:
+        #     print(f"Failed to read the YAML file: {e}")
+
+        for name, value in vars(parsed_args).items():
             if name == 'settings':
                 continue
             if value is not None:

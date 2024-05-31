@@ -10,13 +10,13 @@ from utils.settings import settings
 import utils.plot_parameters as pm
 
 # -- Arrays definitions -- #
-lambda_array = np.linspace(start=0, stop=1000, num=settings.array_points) * 1e-9  # wavelength
-omega_array = np.linspace(start=0, stop=3*settings.omega_c, num=settings.array_points)
+lambda_array = np.linspace(start=0, stop=1000, num=settings.number_points) * 1e-9  # wavelength
+omega_array = np.linspace(start=0, stop=3*settings.omega_c, num=settings.number_points)
 
 escape_efficiencies = np.linspace(start=0.8, stop=0.96, num=10)  # escape efficiency range
-escape_efficiency = settings.escape_efficiency
+escape_efficiency = escape_efficiencies[0]
 
-epsilon_array = np.linspace(start=0, stop=1, num=settings.array_points, endpoint=False)  # threshold or pump power
+epsilon_array = np.linspace(start=0, stop=1, num=settings.number_points, endpoint=False)  # threshold or pump power
 
 colors = plt.cm.viridis(np.linspace(0, 1, len(escape_efficiencies)))  # Using a colormap for colors
 
@@ -41,6 +41,7 @@ if plot_pump_power:
     for line in legend_quadrature.get_lines():
         line.set_color('black')  # Set the legend lines to black
 
+    # Enforce parameters for legend titles
     legend_quadrature._legend_box.align = "left"  # adjust alignment
     legend_quadrature._legend_box.sep = 15  # change title padding
 

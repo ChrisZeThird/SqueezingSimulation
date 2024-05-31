@@ -1,40 +1,37 @@
-# -- Plot parameter -- #
+# Plot parameter
 number_points: 500
 
 cmap_name: 'rainbow'
 alpha: 0.3
 
 plot_bandwidth: False
-plot_waist: False
+plot_waist: True
 plot_kaertner: False
 
-# -- Wavelength -- #
+# Wavelength
 wavelength: 780e-9
 
-# -- Cavity parameters -- #
+# Cavity parameters
 fixed_length: 600e-3
 min_L: 0.2
 max_L: 1.0
 cavity_loss: 0.004
 
-# -- Transmission coefficients -- #
+# Transmission coefficients
 min_T: 0.1
 max_T: 0.3
 R: 50e-3
 R1: 10e-2  # for Kaertner plot
 R2: 11e-2  # for Kaertner plot
 
-# -- Bandwidth -- #
+# Bandwidth
 central_freq: 6.0e6
 range_freq: 0.1
 
-# -- Crystal parameters -- #
+# Crystal parameters
 crystal_length: 10e-3
 crystal_index: 1.8396  # PPKTP refraction index
 
-# -- Squeezing parameters -- #
+# Squeezing parameters
 omega_c: 65000000.0               # bandwidth of the cavity
-transmission_coeff: 0.1           # transmission coefficient of the mirrors
-loss_coeff: 0.0173                # fictitious beam-splitter coefficient
-escape_efficiency: 0.85           # proba that if 1 photon escapes it's by output coupler (not due to loss)
 threshold: 1.0

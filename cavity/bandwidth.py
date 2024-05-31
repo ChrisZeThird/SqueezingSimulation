@@ -12,12 +12,12 @@ import cavity.cavity_formulas as cf
 c = settings.c
 
 # Setting parameters
-number_points = 300
+number_points = settings.number_points
 
-min_L = 0.2
-max_L = 1.
-min_T = 0.1
-max_T = 0.3
+min_L = settings.min_L
+max_L = settings.max_L
+min_T = settings.min_T
+max_T = settings.max_T
 cavity_lengths = np.linspace(start=min_L, stop=max_L, num=number_points)
 transmission_coefficients = np.linspace(start=min_T, stop=max_T, num=number_points)
 
@@ -27,8 +27,8 @@ bandwidth_meshgrid = cf.Bandwidth_linear(cavity_length=L, transmission_coefficie
 clev = np.arange(bandwidth_meshgrid.min(), bandwidth_meshgrid.max(), 0.1)
 
 # Find couple (L, T) such that Delta within range
-central_freq = 6  # MHz
-threshold = 0.1
+central_freq = settings.central_freq  # MHz
+threshold = settings.range_freq
 boundary_down = central_freq - threshold * central_freq
 boundary_up = central_freq + threshold * central_freq
 
@@ -40,7 +40,7 @@ transmission_range = T[indices]
 
 # Setting figure
 fig, ax = plt.subplots()
-contour_plot = ax.contourf(L, T, bandwidth_meshgrid, clev, cmap=mplp.cmap)
+contour_plot = ax.contourf(L, T, bandwidth_meshgrid, clev, cmap=settings.cmap_name)
 
 # contour_plot = ax.imshow(bandwidth_meshgrid, cmap=cmap)
 
@@ -58,8 +58,8 @@ ax.set_ylabel('Transmission coefficient')
 cbar = plt.colorbar(contour_plot, ax=ax)
 cbar.outline.set_visible(False)
 
-cbar.ax.axhline(y=central_freq, color='white', linewidth=50, alpha=mplp.alpha)
-ax.plot(length_range, transmission_range, c='white', alpha=mplp.alpha)
+cbar.ax.axhline(y=central_freq, color='white', linewidth=50, alpha=settings.alpha)
+ax.plot(length_range, transmission_range, c='white', alpha=settings.alpha)
 
 cbar.set_label(r'Bandwidth $\Delta$ (MHz)')  # Set label
 

@@ -11,7 +11,7 @@ import utils.plot_parameters as mplp
 # -- SETTING PARAMETERS -- #
 plot_bandwidth = settings.plot_bandwidth
 plot_waist = settings.plot_waist
-
+print(plot_waist)
 # Some constant
 c = settings.c
 number_points = settings.number_points
@@ -127,6 +127,9 @@ if plot_waist:
 
     fig_waist.tight_layout()  # otherwise the right y-label is slightly clipped
     plt.show()
+
+    rayleigh_length = index_PPKTP * np.pi * (y_max * 1e-3) / wavelength
+    print(rayleigh_length)
 
 
 # -- Kaertner class notes -- #
