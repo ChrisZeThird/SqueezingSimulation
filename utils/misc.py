@@ -51,3 +51,15 @@ def load_crystal_coefficients(filename, crystal_name):
 # Approximate number to the next tenth
 def approximate_to_next_ten(number):
     return round(number, -1)
+
+
+# Create tuples of string list from two arrays
+def arrays_to_tuples_list(arr1, arr2):
+    n = len(arr1)
+    tuple_list = []
+    for i in range(n):
+        tuple_list.append((str(arr1[i]), str(arr2[i])))
+
+
+def convert_np_to_string(arr):
+    return np.char.mod('%d', arr)

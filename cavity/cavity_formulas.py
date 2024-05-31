@@ -47,7 +47,7 @@ def Escape_efficiency(T, Loss):
 
 def Pump_power(T, Loss, E):
     """
-
+    Pump threshold power
     :param T: Transmission coefficient
     :param Loss: Loss: Intra-cavity loss
     :param E: Effective non-linearity of optical medium

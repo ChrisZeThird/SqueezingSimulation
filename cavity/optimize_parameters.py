@@ -35,7 +35,6 @@ cavity_width = np.linspace(start=0.010, stop=0.020, num=10)
 R = 50e-3  # Radii of curvature
 
 crystal_length = 10e-3
-
 cavity_loss = 0.004  # set low loss
 
 # -- OPTIMIZE BANDWIDTH -- #
@@ -81,12 +80,13 @@ if plot_bandwidth:
 
 # -- OPTIMIZE LENGTHS -- #
 wavelength = 780e-9
+crystal_length = 10e-3
 index_PPKTP = 1.8396  # refractive index
-fixed_length = 400e-3
-R = 50e-3
+fixed_length = 600e-3
+R = 75e-3
 
 w1, w2, valid_indices_1, valid_indices_2 = cf.Beam_waist(d_curved=d_curved,
-                                                       L=500e-3,
+                                                       L=fixed_length,
                                                        R=R,
                                                        l_crystal=crystal_length,
                                                        index_crystal=index_PPKTP,
@@ -123,7 +123,7 @@ if plot_waist:
     ax2.tick_params(axis='y', labelcolor=color2)
 
     # Add a text box for the parameters
-    box_text = f"Cavity length: {fixed_length * 1e3} mm \nMirror radius: {R * 1e3} mm"
+    box_text = f"Cavity length: {fixed_length * 1e3} mm\nMirror radius: {R * 1e3} mm\nCrystal length: {crystal_length * 1e3}mm"
     text_box = AnchoredText(box_text, frameon=True, loc=4, pad=0.5)
     plt.setp(text_box.patch, facecolor='white', alpha=0.5)
     plt.gca().add_artist(text_box)
