@@ -36,6 +36,8 @@ class Settings:
     fixed_length: float = 600e-3  # reference length value
     min_L: float = 200e-3
     max_L: float = 100e-3
+    d_curved_min: float = 0.0  # distance between curved mirrors
+    d_curved_max: float = 100e-3
 
     omega_c: float = 65000000.0             # bandwidth of the cavity
     cavity_loss: float = 0.004              # fictitious beam-splitter coefficient
