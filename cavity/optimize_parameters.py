@@ -9,40 +9,44 @@ from utils.settings import settings
 import utils.plot_parameters as mplp
 
 # -- SETTING PARAMETERS -- #
-plot_bandwidth = False
-plot_waist = True
+plot_bandwidth = settings.plot_bandwidth
+plot_waist = settings.plot_waist
 
 # Some constant
 c = settings.c
-number_points = 1000
+number_points = settings.number_points
 
 # Cavity length
-min_L = 0.25
-max_L = 2.0
+min_L = settings.min_L
+max_L = settings.max_L
 cavity_lengths = np.linspace(start=min_L, stop=max_L, num=number_points)
 
 # Transmission coefficient
-min_T = 0.01
-max_T = 0.5
+min_T = settings.min_T
+max_T = settings.max_T
 transmission_coefficients = np.linspace(start=min_T, stop=max_T, num=number_points, endpoint=False)  # avoid division by 0 in FSR/F
 
 L, T = np.meshgrid(cavity_lengths, transmission_coefficients)
 
 # Some fixed cavity parameters
 d_curved = np.linspace(start=0, stop=100, num=number_points) * 1e-3
-cavity_width = np.linspace(start=0.010, stop=0.020, num=10)
 
-R = 50e-3  # Radii of curvature
+R = settings.R  # Radii of curvature
 
-crystal_length = 10e-3
-cavity_loss = 0.004  # set low loss
+crystal_length = settings.crystal_length
+index_PPKTP = settings.crystal_index  # refractive index
+cavity_loss = settings.cavity_loss  # set low loss
+
+wavelength = settings.wavelength
+
+fixed_length = settings.fixed_length
 
 # -- OPTIMIZE BANDWIDTH -- #
-bandwidth_meshgrid = cf.Bandwidth(T=T, L=L, Loss=cavity_loss) * 1e-6
+bandwidth_meshgrid = cf.Bandwidth_bowtie(T=T, L=L, Loss=cavity_loss) * 1e-6
 
 # Find couple (L, T) such that Delta within range
-central_freq = 6  # MHz
-threshold = 0.1
+central_freq = settings.central_freq  # MHz
+threshold = settings.range_freq
 boundary_down = central_freq - threshold * central_freq
 boundary_up = central_freq + threshold * central_freq
 
@@ -68,8 +72,8 @@ if plot_bandwidth:
     cbar = plt.colorbar(contour_plot, ax=ax_bandwidth)
     cbar.outline.set_visible(False)
 
-    cbar.ax.axhline(y=central_freq, color='white', linewidth=50, alpha=mplp.alpha)
-    ax_bandwidth.plot(length_range, transmission_range, c='white', alpha=mplp.alpha)
+    cbar.ax.axhline(y=central_freq, color='white', linewidth=50, alpha=settings.alpha)
+    ax_bandwidth.plot(length_range, transmission_range, c='white', alpha=settings.alpha)
 
     ax_bandwidth.set_xlabel('Cavity length L (m)')
     ax_bandwidth.set_ylabel('Transmission coefficient')
@@ -79,12 +83,6 @@ if plot_bandwidth:
     plt.show()
 
 # -- OPTIMIZE LENGTHS -- #
-wavelength = 780e-9
-crystal_length = 10e-3
-index_PPKTP = 1.8396  # refractive index
-fixed_length = 600e-3
-R = 75e-3
-
 w1, w2, valid_indices_1, valid_indices_2 = cf.Beam_waist(d_curved=d_curved,
                                                        L=fixed_length,
                                                        R=R,
@@ -92,7 +90,6 @@ w1, w2, valid_indices_1, valid_indices_2 = cf.Beam_waist(d_curved=d_curved,
                                                        index_crystal=index_PPKTP,
                                                        wavelength=wavelength)
 
-# rayleigh_range_1 = cf.rayleigh_range(w1, wavelength=wavelength, refraction_index=index_PPKTP)
 
 if plot_waist:
     fig_waist, ax1 = plt.subplots(figsize=(10, 10))
@@ -125,7 +122,7 @@ if plot_waist:
     # Add a text box for the parameters
     box_text = f"Cavity length: {fixed_length * 1e3} mm\nMirror radius: {R * 1e3} mm\nCrystal length: {crystal_length * 1e3}mm"
     text_box = AnchoredText(box_text, frameon=True, loc=4, pad=0.5)
-    plt.setp(text_box.patch, facecolor='white', alpha=0.5)
+    plt.setp(text_box.patch, facecolor='white', alpha=settings.alpha)
     plt.gca().add_artist(text_box)
 
     fig_waist.tight_layout()  # otherwise the right y-label is slightly clipped
@@ -133,11 +130,11 @@ if plot_waist:
 
 
 # -- Kaertner class notes -- #
-kaertner = False
+plot_kaertner = settings.plot_kaertner
 
-if kaertner:
-    R1 = 10e-2
-    R2 = 11e-2
+if plot_kaertner:
+    R1 = settings.R1
+    R2 = settings.R2
     length_kaertner = np.linspace(start=0, stop=20, num=number_points) * 1e-2
 
     w1 = cf.waist_mirror1(R1=R1, R2=R2, L=length_kaertner, wavelength=790e-9)

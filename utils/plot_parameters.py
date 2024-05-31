@@ -18,7 +18,6 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 matplotlib.rcParams['mathtext.fontset'] = 'cm'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
 
-alpha = 0.3
 cmap = matplotlib.colormaps['rainbow']  # define the colormap
 
 

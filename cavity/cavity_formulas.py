@@ -24,7 +24,7 @@ def FSR(L):
     return settings.c / L
 
 
-def Bandwidth(T, Loss, L):
+def Bandwidth_bowtie(T, Loss, L):
     """
     Calculate bandwidth of bow-tie ring cavity (frequency domain)
     :param T: Transmission coefficient
@@ -33,6 +33,17 @@ def Bandwidth(T, Loss, L):
     :return:
     """
     return FSR(L=L) / Finesse(T=T, Loss=Loss)
+
+
+def Bandwidth_linear(cavity_length, transmission_coefficient):
+    """
+    Calculates the bandwidth of a linear cavity from a couple (L, T)
+    :param cavity_length: in meter
+    :param transmission_coefficient:
+    :return:
+    """
+    # return (c / (2 * cavity_length)) * (transmission_coefficient / (2 * np.pi))
+    return (3e8 * transmission_coefficient) / (4 * np.pi * cavity_length)
 
 
 def Escape_efficiency(T, Loss):
