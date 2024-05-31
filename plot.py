@@ -19,7 +19,7 @@ plt.rc('axes', titlesize=BIGGER_SIZE)     # fontsize of the axes title
 plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
 plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 # plt.rc('legend.title_fontsize', titlesize=MEDIUM_SIZE)
 
@@ -48,11 +48,18 @@ for idx, escape_efficiency in enumerate(escape_efficiencies):
 
 
 # Create the legend (for line style)
-legend_quadrature = ax.legend(['$s_x$', '$s_p$'], loc='upper left', bbox_to_anchor=(1.02, 1), title='Quadratures')
+legend_quadrature = ax.legend(['$s_x$', '$s_p$'],
+                              loc='upper left',
+                              bbox_to_anchor=(1.02, 1),
+                              title='Quadratures',
+                              title_fontsize=MEDIUM_SIZE+2)
+
 for line in legend_quadrature.get_lines():
     line.set_color('black')  # Set the legend lines to black
-legend_quadrature._legend_box.align = "left"
-legend_quadrature._legend_box.sep = 15
+
+legend_quadrature._legend_box.align = "left"  # adjust alignment
+legend_quadrature._legend_box.sep = 15  # change title padding
+
 ax.add_artist(legend_quadrature)
 
 # Create custom legend handles for escape efficiencies
@@ -61,11 +68,13 @@ legend_eta = ax.legend([(color, '--') for color in colors],
                        handler_map={tuple: AnyObjectHandler()},
                        loc='lower left',
                        bbox_to_anchor=(1.02, 0),
-                       title='Escape efficiency')
-legend_eta._legend_box.align = "left"
-legend_eta._legend_box.sep = 15
+                       title='Escape efficiency',
+                       title_fontsize=MEDIUM_SIZE+2)
+legend_eta._legend_box.align = "left"  # adjust alignment
+legend_eta._legend_box.sep = 15  # change title padding
 ax.add_artist(legend_eta)
 
+# Set labels
 ax.set_xlabel("$P/P_{thr} = \epsilon^2$")
 ax.set_ylabel('$S$ (dB)')
 ax.set_title(f'Squeezing and anti-squeezing versus pump power at zero frequency.', pad=20)
