@@ -27,6 +27,8 @@ If you are using Pycharm follow these simple steps:
 
 #### How to clone a repository in Spyder?
 
+Tutorial was found at [this link](https://github.com/spyder-ide/spyder/issues/17271#issuecomment-1031753490).
+
 You need to open a system terminal, go to the directory you want to clone and do `git clone your-repo-here.git`, then you 
 can open Spyder and either create a new project in the directory where you cloned your repository, or just open in the 
 files pane the directory where you cloned the repository
