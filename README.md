@@ -23,6 +23,28 @@ If you are using Pycharm follow these simple steps:
 3. Paste the url of the **GitHub** repository you just copied and click clone.
 4. You can now access the files. The GUI should automatically ask you if you want to download the requirements
 
+### Using Spyder
+
+#### How to clone a repository in Spyder?
+
+You need to open a system terminal, go to the directory you want to clone and do `git clone your-repo-here.git`, then you 
+can open Spyder and either create a new project in the directory where you cloned your repository, or just open in the 
+files pane the directory where you cloned the repository
+
+#### How to sync a Spyder folder with GitHub?
+
+To sync your folder you need to use git commands, https://education.github.com/git-cheat-sheet-education.pdf, normally 
+you will have two most use cases that are syncing with your remote repo and publishing your changes to the remote repo.
+This has to be done in a system terminal as well.
+
+- Exploring changes: `git fetch`
+- Sync remote changes to local repository: `git pull`
+- To publish changes, first create a commit with a description and then publish them: 
+```
+git add -A 
+git commit -m "Description of the changes"
+git push
+```
 
 # Project organization
 
