@@ -2,10 +2,12 @@ import matplotlib
 from matplotlib.legend_handler import HandlerBase
 import matplotlib.pyplot as plt
 
+from utils.settings import settings
+
 # -- Matplotlib parameters -- #
-SMALL_SIZE = 15
-MEDIUM_SIZE = 20
-BIGGER_SIZE = 25
+SMALL_SIZE = 18
+MEDIUM_SIZE = 25
+BIGGER_SIZE = 28
 
 plt.rc('font', size=SMALL_SIZE)  # controls default text sizes
 plt.rc('axes', titlesize=MEDIUM_SIZE)  # fontsize of the axes title
@@ -18,7 +20,7 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 matplotlib.rcParams['mathtext.fontset'] = 'cm'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
 
-cmap = matplotlib.colormaps['rainbow']  # define the colormap
+cmap = matplotlib.colormaps[settings.cmap_name]  # define the colormap
 
 
 class AnyObjectHandler(HandlerBase):
