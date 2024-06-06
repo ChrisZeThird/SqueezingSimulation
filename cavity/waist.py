@@ -1,4 +1,3 @@
-import matplotlib
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 

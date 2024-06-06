@@ -1,7 +1,3 @@
-import matplotlib.pyplot as plt
-import numpy as np
-
-import cavity.cavity_formulas as cf
 from cavity.bandwidth import bandwidth
 from cavity.waist import waist, Kaertner
 
@@ -17,7 +13,7 @@ if __name__ == '__main__':
     if settings.squeezing_wavelength:
         squeezing_vs_wavelength()
 
-    # -- OPTIMIZE bandwidth -- #
+    # -- Optimize bandwidth -- #
     if settings.plot_bandwidth:
         bandwidth()
 
