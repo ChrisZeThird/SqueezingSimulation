@@ -1,11 +1,7 @@
-import matplotlib
-import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
 import numpy as np
 
-from utils.misc import wavelength_to_omega, convert_np_to_string, arrays_to_tuples_list
-from noise_spectrum import noise_spectrum_x, noise_spectrum_p
+from squeezing.noise_spectrum import noise_spectrum_x, noise_spectrum_p
 from utils.settings import settings
 import utils.plot_parameters as pm
 
@@ -14,15 +10,13 @@ lambda_array = np.linspace(start=0, stop=1000, num=settings.number_points) * 1e-
 omega_array = np.linspace(start=0, stop=3*settings.omega_c, num=settings.number_points)
 
 escape_efficiencies = np.linspace(start=0.8, stop=0.96, num=10)  # escape efficiency range
-escape_efficiency = escape_efficiencies[0]
-
 epsilon_array = np.linspace(start=0, stop=1, num=settings.number_points, endpoint=False)  # threshold or pump power
 
 colors = plt.cm.viridis(np.linspace(0, 1, len(escape_efficiencies)))  # Using a colormap for colors
 
+
 # -- Squeezing and anti-squeezing versus pump power -- #
-plot_pump_power = True
-if plot_pump_power:
+def squeezing_vs_pump():
     fig_pump_power, ax = plt.subplots(figsize=(16, 9))
     for idx, escape_efficiency in enumerate(escape_efficiencies):
         sx = noise_spectrum_x(omega=0.0, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon_array)
@@ -69,23 +63,48 @@ if plot_pump_power:
     plt.grid(True)
     plt.show()
 
+
 # -- Squeezing and anti-squeezing versus wavelength -- #
-squeezing_wavelength = False
-if squeezing_wavelength:
-    fig2 = plt.figure(figsize=(16, 9))
-    epsilon = 0.1
+def squeezing_vs_wavelength(escape_efficiency=0.9, epsilon=0.1):
+    """
+
+    :param escape_efficiency:
+    :param epsilon:
+    :return:
+    """
+    fig, ax = plt.subplots(figsize=(16, 9))
 
     sx = noise_spectrum_x(omega=omega_array, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon)
     sp = noise_spectrum_p(omega=omega_array, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon)
-    plt.plot(omega_array/settings.omega_c, 10*np.log10(sx))
-    plt.plot(omega_array/settings.omega_c, 10*np.log10(sp), linestyle='--')
+    plt.plot(omega_array/settings.omega_c, 10*np.log10(sx), color='k')
+    plt.plot(omega_array/settings.omega_c, 10*np.log10(sp), color='k', linestyle='--')
 
     # Create the legend (for line style)
     legend_quadrature = plt.legend(['$s_x$', '$s_p$'], loc='upper left', bbox_to_anchor=(1.0, 1), title='Quadratures')
 
     plt.xlabel("$\omega/\omega_c$")
     plt.ylabel('$S$ (dB)')
-    # plt.title(f'Squeezing and anti-squeezing versus noise frequency ($\eta =$ {escape_efficiency} and $\epsilon =$ {epsilon})')
+
+    # Add some legend
+    text = f'$\eta =$ {escape_efficiency}\n$\epsilon =$ {epsilon}'
+    # plt.annotate(text,
+    #           xy=(1.02, 0.6),
+    #           xycoords='axes fraction',
+    #           size=18,
+    #           bbox=dict(boxstyle="round,pad=1", edgecolor='black', fc='none'))
+
+    # Create the legend (for line style)
+    parameters_legend = ax.legend([f'$\eta=${escape_efficiency}', f'$\epsilon=${epsilon}'],
+                                  loc='upper left',
+                                  bbox_to_anchor=(1.0025, 0.7),
+                                  handlelength=0,
+                                  handletextpad=0,
+                                  fontsize=18)
+    for item in parameters_legend.legendHandles:
+        item.set_visible(False)
+
+    ax.add_artist(legend_quadrature)
+    ax.add_artist(parameters_legend)
 
     # Adjust the layout to accommodate both legends
     plt.subplots_adjust(right=0.85)

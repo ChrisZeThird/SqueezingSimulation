@@ -28,6 +28,8 @@ class Settings:
     plot_bandwidth: bool = False    # plot bandwidth region
     plot_waist: bool = False        # plot waist for bow-tie
     plot_kaertner: bool = False     # waist from Kaertner classnotes
+    plot_pump_power: bool = False   # squeezing and anti-squeezing versus pump power
+    squeezing_wavelength: bool = False  # squeezing and anti-squeezing versus wavelength
 
     # -- Universal constants -- #
     c: float = 3e8  # speed of light (m/s)
