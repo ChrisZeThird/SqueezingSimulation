@@ -1,7 +1,7 @@
 # Plot parameter
 number_points: 500
 
-cmap_name: 'autumn'
+cmap_name: 'gray'
 alpha: 0.8
 
 plot_bandwidth: True

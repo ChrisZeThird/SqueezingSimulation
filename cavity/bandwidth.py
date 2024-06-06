@@ -22,13 +22,22 @@ def bandwidth():
     # Bandwidths list
     bandwidth_list = np.array([1, 10, 100]) * 1e6
     bandwidth_colours = ['lightsteelblue', 'cornflowerblue', 'royalblue']
+    bandwidth_cmaps = [mplp.symmetrical_colormap((x, None)) for x in ['Blues', 'Greens', 'Reds']]
 
     # Bandwidth surface plot
     clev = np.arange(bandwidth_meshgrid.min(), bandwidth_meshgrid.max(), 0.2)
 
-    fig_bandwidth, ax_bandwidth = plt.subplots()
-    contour_plot = ax_bandwidth.contourf(L, T, bandwidth_meshgrid, clev, cmap=mplp.cmap, norm=matplotlib.colors.LogNorm(vmin=1, vmax=bandwidth_meshgrid.max()))
+    fig_bandwidth = plt.figure(figsize=(12, 6))
+    ax1 = plt.subplot(3, 2, 6)
+    ax2 = plt.subplot(3, 2, 4)
+    ax3 = plt.subplot(3, 2, 2)
+    ax_bandwidth = plt.subplot(1, 3, 1)
+    axes = [ax1, ax2, ax3]
+
+    # contour_plot = ax_bandwidth.contourf(L, T, bandwidth_meshgrid, clev, cmap=mplp.cmap, norm=matplotlib.colors.LogNorm(vmin=1, vmax=bandwidth_meshgrid.max()))
     # contour_plot.set_clim(vmin=1, vmax=round(bandwidth_meshgrid.max()))
+    # cbar = plt.colorbar(contour_plot, ax=ax_bandwidth)
+    # cbar.outline.set_visible(False)
 
     # Adjust ticks for colorbar
     nb_ticks = 7
@@ -37,14 +46,10 @@ def bandwidth():
     new_xticks_bandwidth = np.linspace(0, settings.number_points, nb_ticks)
     new_yticks_bandwidth = np.linspace(0, settings.number_points, nb_ticks)
 
-    cbar = plt.colorbar(contour_plot, ax=ax_bandwidth)
-    cbar.outline.set_visible(False)
+    # Prepare the custom colours to update the cbar with
+    # cbar_newcolors = []
 
-    ax_bandwidth.set_xlabel('Cavity length L (m)')
-    ax_bandwidth.set_ylabel('Transmission coefficient')
-    cbar.set_label(r'Bandwidth $\Delta$ (MHz) in log scale')
-
-    for central_freq, colour in zip(bandwidth_list, bandwidth_colours):
+    for central_freq, colour, selected_cmap, axis in zip(bandwidth_list, bandwidth_colours, bandwidth_cmaps, axes):
 
         # Find couple (L, T) such that Delta within range
         boundary_down = (central_freq - settings.range_freq * central_freq) * 1e-6
@@ -58,19 +63,30 @@ def bandwidth():
         length_range = L[indices]
         transmission_range = T[indices]
 
-        cbar.set_ticks([])
-        cbar.ax.axhline(y=central_freq*1e-6, color=colour, linewidth=2, alpha=settings.alpha)
+        # Mask the region outside the desired range
+        mask = np.ones_like(bandwidth_meshgrid, dtype=bool)
+        mask[indices] = False
+        masked_bandwidth = np.ma.masked_array(bandwidth_meshgrid, mask)
+
+        # cbar.ax.axhline(y=central_freq*1e-6, color=colour, linewidth=2, alpha=settings.alpha)
         # line_text = cbar.ax.text(central_freq*1e-6, 1, f'{central_freq*1e-6}', ha='left', va='center')
         # cbar.ax.axhline(y=boundary_down, color=colour, linestyle='--', linewidth=2)
         # cbar.ax.axhline(y=boundary_up, color=colour, linestyle='--', linewidth=2)
 
-        ax_bandwidth.plot(length_range, transmission_range, c=colour, alpha=settings.alpha, label=f'{central_freq*1e-6}MHz')
-        ax_bandwidth.legend(labelcolor='linecolor')
+        # Plot the masked region with a different colormap
+        contour_zone = ax_bandwidth.contourf(L, T, masked_bandwidth, cmap=selected_cmap, alpha=settings.alpha)
+        axis.axis('off')
+        plt.colorbar(contour_zone, ax=axis)
 
-    # Add a text box for the parameters
-    # box_text = f"Cavity loss: {settings.cavity_loss}\nCentral frequency ($\pm$ {settings.range_freq * 100}%)"
-    # text_box = AnchoredText(box_text, frameon=True, loc=4, pad=0.5)
-    # plt.setp(text_box.patch, facecolor='white', alpha=0.9)
-    # plt.gca().add_artist(text_box)
+        # Plot the boundaries for the region
+        # ax_bandwidth.plot(L[indices], T[indices], c=colour, alpha=settings.alpha, label=f'{central_freq * 1e-6}MHz')
 
+        # ax_bandwidth.plot(length_range, transmission_range, c=colour, alpha=settings.alpha, label=f'{central_freq*1e-6}MHz')
+        # ax_bandwidth.legend(labelcolor='linecolor')
+
+    ax_bandwidth.set_xlabel('Cavity length L (m)')
+    ax_bandwidth.set_ylabel('Transmission coefficient')
+    # cbar.set_label(r'Bandwidth $\Delta$ (MHz) in log scale')
+    # cbar.set_ticks([])
+    plt.tight_layout()
     plt.show()
