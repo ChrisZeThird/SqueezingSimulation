@@ -22,16 +22,12 @@ def bandwidth():
     # Bandwidths list
     bandwidth_list = np.array([1, 10, 100]) * 1e6
     bandwidth_colours = ['lightsteelblue', 'cornflowerblue', 'royalblue']
-    # bandwidth_cmaps = [mplp.symmetrical_colormap((x, None)) for x in ['Blues', 'Greens', 'Reds']]
-    bandwidth_cmaps = ['Blues', 'Greens', 'Reds']
+    bandwidth_cmaps = [mplp.symmetrical_colormap((x, None)) for x in ['Blues', 'Greens', 'Reds']]
 
     # Bandwidth surface plot
     clev = np.arange(bandwidth_meshgrid.min(), bandwidth_meshgrid.max(), 0.2)
 
     fig_bandwidth = plt.figure(figsize=(16, 9))
-    # ax1 = plt.subplot(3, 2, 6)
-    # ax2 = plt.subplot(3, 2, 4)
-    # ax3 = plt.subplot(3, 2, 2)
     # Creating three axes: add_axes([xmin,ymin,dx,dy])
     ax1 = fig_bandwidth.add_axes((0.75, 0.1, 0.1, 0.28))
     ax2 = fig_bandwidth.add_axes((0.75, 0.395, 0.1, 0.28))
@@ -50,14 +46,8 @@ def bandwidth():
         # Find couple (L, T) such that Delta within range
         boundary_down = (central_freq - settings.range_freq * central_freq) * 1e-6
         boundary_up = (central_freq + settings.range_freq * central_freq) * 1e-6
-        # print(boundary_up)
-        # print(boundary_down)
         indices = np.where((bandwidth_meshgrid < boundary_up) & (
                     bandwidth_meshgrid > boundary_down))  # here np.where gives a tuple, the first element of which gives the row index, while the
-
-        # gives row index, 2nd element gives column index
-        length_range = L[indices]
-        transmission_range = T[indices]
 
         # Mask the region outside the desired range
         mask = np.ones_like(bandwidth_meshgrid, dtype=bool)
