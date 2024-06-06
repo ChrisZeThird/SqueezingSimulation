@@ -1,4 +1,6 @@
 import json
+import yaml
+
 import matplotlib.pyplot as plt
 from numpy import pi, sin
 import numpy as np
@@ -30,7 +32,7 @@ def kvector(wl, index):
     return wavevector
 
 
-# Importing json
+# Importing json/yaml
 def list_available_crystals(filename):
     with open(filename, "r") as file:
         data = json.load(file)
@@ -38,14 +40,10 @@ def list_available_crystals(filename):
         return crystal_names
 
 
-def load_crystal_coefficients(filename, crystal_name):
-    with open(filename, "r") as file:
-        data = json.load(file)
-        coefficients = data.get(crystal_name.upper())
-        if coefficients is None:
-            available_crystals = list(data.keys())
-            raise ValueError(f"Crystal '{crystal_name}' not found in the JSON file. Available crystals: {available_crystals}")
-        return coefficients
+def load_coefficients(file_path='coefficients.yaml'):
+    with open(file_path, 'r') as file:
+        coefficients = yaml.safe_load(file)
+    return coefficients['coefficients']
 
 
 # Approximate number to the next tenth
