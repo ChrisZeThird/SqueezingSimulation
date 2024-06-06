@@ -4,9 +4,11 @@ number_points: 500
 cmap_name: 'gray'
 alpha: 0.8
 
-plot_bandwidth: True
+plot_bandwidth: False
 plot_waist: False
 plot_kaertner: False
+plot_pump_power: False
+squeezing_wavelength: True
 
 # Wavelength
 wavelength: 780e-9
@@ -27,7 +29,7 @@ R1: 10e-2  # for Kaertner plot
 R2: 11e-2  # for Kaertner plot
 
 # Bandwidth
-central_freq: 1.0e6
+central_freq: 10.0e6
 range_freq: 0.1
 
 # Crystal parameters
@@ -35,5 +37,5 @@ crystal_length: 10e-3
 crystal_index: 1.8396  # PPKTP refraction index
 
 # Squeezing parameters
-omega_c: 65000000.0               # bandwidth of the cavity
+omega_c: 10000000.0               # bandwidth of the cavity
 threshold: 1.0
