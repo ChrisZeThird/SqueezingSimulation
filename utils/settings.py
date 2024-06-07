@@ -30,6 +30,7 @@ class Settings:
     plot_kaertner: bool = False     # waist from Kaertner classnotes
     plot_pump_power: bool = False   # squeezing and anti-squeezing versus pump power
     squeezing_wavelength: bool = False  # squeezing and anti-squeezing versus wavelength
+    plot_threshold: bool = False    # find pump threshold value within range for T, L and E_NL
 
     # -- Universal constants -- #
     c: float = 3e8  # speed of light (m/s)

@@ -2,6 +2,7 @@ from cavity.bandwidth import bandwidth
 from cavity.waist import waist, Kaertner
 
 from squeezing.plot import squeezing_vs_pump, squeezing_vs_wavelength
+from squeezing.threshold import slider_threshold
 
 from utils.settings import settings
 
@@ -12,6 +13,9 @@ if __name__ == '__main__':
 
     if settings.squeezing_wavelength:
         squeezing_vs_wavelength()
+
+    if settings.plot_threshold:
+        slider_threshold()
 
     # -- Optimize bandwidth -- #
     if settings.plot_bandwidth:
