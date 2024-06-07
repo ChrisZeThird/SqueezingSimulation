@@ -54,12 +54,16 @@ class Settings:
 
     # -- Laser characteristics -- #
     wavelength: float = 780.0e-9
+    pump_wavelength: float = wavelength / 2
+    signal_wavelength: float = wavelength
+    idler_wavelength: float = wavelength
 
     # -- Bandwidth -- #
     central_freq: float = 6.0e6
     range_freq: float = 0.1  # 10% around central frequency
 
     # -- Crystal -- #
+    crystal: str = 'KTP'
     crystal_length: int = 10e-3
     crystal_index: float = 1.8396  # PPKTP refraction index
 
@@ -68,6 +72,14 @@ class Settings:
         Create the setting object.
         """
         self._load_file_and_cmd()
+
+    def validate(self):
+        """
+        Validate settings.
+        :return:
+        """
+        valid_crystals = ['LN', 'KTP', 'BBO']
+        assert self.crystal.upper() in valid_crystals, f"Invalid Crystal name: {self.crystal}"
 
     def _load_file_and_cmd(self) -> None:
         """
@@ -136,7 +148,7 @@ class Settings:
                 # Directly set the value to bypass the "__setattr__" function
                 self.__dict__[name] = value
 
-        # self.validate()
+        self.validate()
 
     def __setattr__(self, name, value) -> None:
         """

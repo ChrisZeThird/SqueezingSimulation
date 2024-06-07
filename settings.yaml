@@ -39,3 +39,7 @@ crystal_index: 1.8396  # PPKTP refraction index
 # Squeezing parameters
 omega_c: 10000000.0               # bandwidth of the cavity
 threshold: 1.0
+
+# Quasi-phase matching
+crystal: 'KTP'
+pump_wavelength: 780e-9
