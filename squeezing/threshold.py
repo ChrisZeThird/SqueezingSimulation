@@ -27,26 +27,30 @@ def slider_threshold():
 
     # Create the figure and the line that we will manipulate
     # E vs (T,L)
-    fig1 = plt.figure(figsize=(9, 9))
-    ax1 = fig1.add_subplot(111, projection='3d')
+    fig = plt.figure(figsize=(9, 9))
+    ax1 = fig.add_subplot(121, projection='3d')
 
     ax1.set_xlabel('\nTransmission coefficient (T)', fontsize=18)
     ax1.set_ylabel('\nIntracavity loss', fontsize=18)
-    ax1.set_zlabel('\nEffective Non-linearity $E_{NL}$ (W$^{-1}$)', fontsize=18, labelpad=20)
+    # ax1.set_zlabel('Effective Non-linearity $E_{NL}$ (W$^{-1}$)', fontsize=18)
     ax1.tick_params(axis='z', which='major', pad=15)
 
-    ax1.plot_surface(TT, LL, E_NL_fixedP, cmap='viridis')
+    ax1.plot_surface(TT, LL, E_NL_fixedP*1e3, cmap='viridis')
+    # for label in ax1.xaxis.get_ticklabels()[::4]:
+    #     label.set_visible(False)
 
     # E vs (T+L, P)
-    fig2 = plt.figure(figsize=(9, 9))
-    ax2 = fig2.add_subplot(111, projection='3d')
+    ax2 = fig.add_subplot(122, projection='3d')
 
     ax2.set_xlabel('\nTransmission coefficient (T)', fontsize=18)
     ax2.set_ylabel('\nPump threshold power', fontsize=18)
-    ax2.set_zlabel('\nEffective Non-linearity $E_{NL}$ (W$^{-1}$)', fontsize=18, labelpad=20)
+    # ax2.set_zlabel('\nEffective Non-linearity $E_{NL}$ (mW$^{-1}$)', fontsize=18)
     ax2.tick_params(axis='z', which='major', pad=15)
 
-    ax2.plot_surface(XX, PP, E_NL, cmap='viridis')
+    ax2.plot_surface(XX, PP, E_NL*1e3, cmap='viridis')
+    ax2.view_init(elev=30, azim=130)
+
+    # print(ax2.xaxis.get_ticklabels())
 
     plt.tight_layout()
     plt.show()
