@@ -107,8 +107,15 @@ threshold: 1.0
 
 ### Main script
 
-To run any scripts related to cavity optimization, make sure you set at least one parameter among `plot_bandwidth` and
-`plot_waist` to `True`. Then simply run `cavity\optimize_parameters.py`. 
+To run any scripts related to cavity optimization, make sure you set at least one parameter among:
+- `plot_bandwidth`
+- `plot_waist`
+- `plot_kaertner`
+- `plot_pump_power`
+- `squeezing_wavelength`
+- `plot_threshold`
+
+is set to `True`. Then simply execute `run.py`. 
 
 In **Pycharm**, make sure in the configuration
 that the project directory is set to the root of the repository, otherwise `utils\settings.py` will not be able to load
