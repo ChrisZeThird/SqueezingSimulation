@@ -56,7 +56,7 @@ def Escape_efficiency(T, Loss):
     return T / (T + Loss)
 
 
-def Pump_power(T, Loss, E):
+def Pump_threshold(T, Loss, E):
     """
     Pump threshold power
     :param T: Transmission coefficient
