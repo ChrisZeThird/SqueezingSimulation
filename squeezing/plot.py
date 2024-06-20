@@ -28,16 +28,16 @@ def squeezing_vs_pump():
     # Create the legend (for line style)
     legend_quadrature = ax.legend(['$s_x$', '$s_p$'],
                                   loc='upper left',
-                                  bbox_to_anchor=(1.02, 1),
+                                  bbox_to_anchor=(1.02, 1.02),
                                   title='Quadratures',
-                                  title_fontsize=pm.MEDIUM_SIZE+2)
+                                  title_fontsize=pm.MEDIUM_SIZE-5)
 
     for line in legend_quadrature.get_lines():
         line.set_color('black')  # Set the legend lines to black
 
     # Enforce parameters for legend titles
     legend_quadrature._legend_box.align = "left"  # adjust alignment
-    legend_quadrature._legend_box.sep = 15  # change title padding
+    # legend_quadrature._legend_box.sep = 15  # change title padding
 
     ax.add_artist(legend_quadrature)
 
@@ -48,18 +48,19 @@ def squeezing_vs_pump():
                            loc='lower left',
                            bbox_to_anchor=(1.02, 0),
                            title='Escape efficiency',
-                           title_fontsize=pm.MEDIUM_SIZE+2)
+                           title_fontsize=pm.MEDIUM_SIZE-5,
+                           fontsize=18)
     legend_eta._legend_box.align = "left"  # adjust alignment
-    legend_eta._legend_box.sep = 15  # change title padding
+    # legend_eta._legend_box.sep = 15  # change title padding
     ax.add_artist(legend_eta)
 
     # Set labels
     ax.set_xlabel("$P/P_{thr} = \epsilon^2$")
     ax.set_ylabel('$S$ (dB)')
-    ax.set_title(f'Squeezing and anti-squeezing versus pump power at zero frequency.', pad=20)
+    # ax.set_title(f'Squeezing and anti-squeezing versus pump power at zero frequency.', pad=20)
 
     # Adjust the layout to accommodate both legends
-    plt.subplots_adjust(right=0.85)
+    plt.subplots_adjust(right=0.8)
     plt.grid(True)
     plt.show()
 

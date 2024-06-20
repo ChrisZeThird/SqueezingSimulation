@@ -86,6 +86,7 @@ def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=1):
     B1 = A1 * ((l_crystal / 2) + (d_curved - l_crystal) / 2) + E
     C1 = - 2 / R
     D1 = (1 / index_crystal) * (C1 * (d_curved - l_crystal) / 2 + 1)
+    # D1 = C1 * (l_crystal / (2 * index_crystal) - (d_curved - l_crystal) / 2) + 1
 
     return A1, B1, C1, D1
 

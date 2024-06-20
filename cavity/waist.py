@@ -19,7 +19,7 @@ def waist():
                                                              wavelength=settings.wavelength)
 
     # Plot waist
-    fig_waist, ax1 = plt.subplots(figsize=(10, 10))
+    fig_waist, ax1 = plt.subplots(figsize=(16, 9))
 
     # Add waist 1
     color1 = 'tab:red'
@@ -48,7 +48,7 @@ def waist():
 
     # Print Rayleigh length
     rayleigh_length = settings.crystal_index * np.pi * (y_max ** 2) / settings.wavelength
-    print(rayleigh_length)
+    # print(rayleigh_length)
 
     # Add a text box for the parameters
     box_text = f"Cavity length: {settings.fixed_length * 1e3} mm\nMirror radius: {settings.R * 1e3} mm\nCrystal length: {settings.crystal_length * 1e3}mm"

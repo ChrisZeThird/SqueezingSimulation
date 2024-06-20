@@ -7,9 +7,9 @@ alpha: 0.8
 plot_bandwidth: False
 plot_waist: False
 plot_kaertner: False
-plot_pump_power: False
+plot_pump_power: True
 squeezing_wavelength: False
-plot_threshold: True
+plot_threshold: False
 
 # Wavelength
 wavelength: 780e-9
