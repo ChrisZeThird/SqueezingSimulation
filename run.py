@@ -9,6 +9,7 @@ from squeezing.threshold import slider_threshold
 from utils.settings import settings
 
 from gui.plot_embedder import PlotEmbedder
+from gui.main_gui import MainApplication
 
 if __name__ == '__main__':
     # # -- Squeezing -- #
@@ -34,5 +35,5 @@ if __name__ == '__main__':
     #     Kaertner()
 
     root = Tk()
-    pe = PlotEmbedder(parent=root, title="Test Plot")
-    mainloop()
+    app = MainApplication(root)
+    root.mainloop()

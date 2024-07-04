@@ -6,9 +6,9 @@ import numpy as np
 
 
 class PlotEmbedder:
-    def __init__(self, parent, title):
+    def __init__(self, parent, title, row, col):
         self.frame = ttk.Frame(parent)
-        self.frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.frame.grid(row=row, column=col, sticky=tk.NSEW)
 
         self.figure, self.ax = plt.subplots()
         self.ax.set_title(title)
