@@ -10,19 +10,25 @@ class MainApplication:
         self.root = root
         self.root.title("Function Evolution Visualizer")
 
+        self.x = np.linspace(0, 10, 100)
+        self.y = np.sin(self.x)
+
         # Parameter controls
         self.parameter_frame = ttk.Frame(root)
-        self.parameter_frame.grid(row=0, column=0, columnspan=2, sticky=tk.EW)
+        self.parameter_frame.grid(row=0, column=0, columnspan=2, sticky=tk.EW, padx=5, pady=5)
 
         self.param_label = ttk.Label(self.parameter_frame, text="Parameter:")
-        self.param_label.pack(side=tk.LEFT, padx=5, pady=5)
+        self.param_label.grid(row=0, column=0, padx=5, pady=5)
 
         self.param_var = tk.DoubleVar(value=1.0)
         self.param_entry = ttk.Entry(self.parameter_frame, textvariable=self.param_var)
-        self.param_entry.pack(side=tk.LEFT, padx=5, pady=5)
+        self.param_entry.grid(row=0, column=1, padx=5, pady=5)
 
         self.update_button = ttk.Button(self.parameter_frame, text="Update Plots", command=self.update_plots)
-        self.update_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.update_button.grid(row=0, column=2, padx=5, pady=5)
+
+        self.exit_button = ttk.Button(self.parameter_frame, text="Exit", command=root.destroy)
+        self.exit_button.grid(row=0, column=3, padx=5, pady=5)
 
         # Configure grid layout
         root.grid_rowconfigure(1, weight=1)
@@ -43,12 +49,11 @@ class MainApplication:
 
     def update_plots(self):
         param_value = self.param_var.get()
-        x = np.linspace(0, 10, 100)
 
         for plot_embedder in self.plot_frames:
             if plot_embedder.ax.get_title() == "Schema":
-                y = param_value * np.sin(x)  # Example schema logic
+                self.y = param_value * self.y  # Example schema logic
             else:
-                y = param_value * np.cos(x)  # Example plot logic
+                self.y = 1/param_value * self.y  # Example plot logic
 
-            plot_embedder.update_plot(x, y)
+            plot_embedder.update_plot(self.x, self.y)

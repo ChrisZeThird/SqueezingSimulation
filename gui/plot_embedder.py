@@ -7,6 +7,7 @@ import numpy as np
 
 class PlotEmbedder:
     def __init__(self, parent, title, row, col):
+
         self.frame = ttk.Frame(parent)
         self.frame.grid(row=row, column=col, sticky=tk.NSEW)
 

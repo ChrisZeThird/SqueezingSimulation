@@ -1,3 +1,4 @@
+import numpy as np
 from tkinter import Tk, mainloop
 
 from cavity.bandwidth import bandwidth
@@ -33,6 +34,10 @@ if __name__ == '__main__':
     # # -- Kaertner class notes -- #
     # if settings.plot_kaertner:
     #     Kaertner()
+
+    x = np.linspace(0, 10, 100)
+    y1 = np.sin(x)
+    y2 = np.cos(x)
 
     root = Tk()
     app = MainApplication(root)
