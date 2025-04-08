@@ -1,6 +1,6 @@
-import matplotlib
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 import numpy as np
 
@@ -20,7 +20,11 @@ def bandwidth():
     bandwidth_meshgrid = cf.Bandwidth_bowtie(T=T, L=L, Loss=settings.cavity_loss) * 1e-6
 
     # Bandwidths list
-    bandwidth_list = np.array([1, 10, 100]) * 1e6
+    # bandwidth_list = np.array([1, 10, 100]) * 1e6
+    # bandwidth_colours = ['lightsteelblue', 'cornflowerblue', 'royalblue']
+    # bandwidth_cmaps = [mplp.symmetrical_colormap((x, None)) for x in ['Blues', 'Greens', 'Reds']]
+
+    bandwidth_list = np.array([5, 10, 20]) * 1e6
     bandwidth_colours = ['lightsteelblue', 'cornflowerblue', 'royalblue']
     bandwidth_cmaps = [mplp.symmetrical_colormap((x, None)) for x in ['Blues', 'Greens', 'Reds']]
 
@@ -61,9 +65,25 @@ def bandwidth():
         cbar_zone_ticks = cbar_zone.get_ticks()
         cbar_zone.set_ticks(cbar_zone_ticks[1:-1])
 
+    # Add some points to give couples from different articles
+    values = {"Masada": (500e-3, 0.1), "Burks": (550e-3, 0.07), "Tanimura": (600e-3, 0.1), "Aoki": (215e-3, 0.15), "Hétet": (600e-3, 0.18)}
+
+    # Plot all in black with star markers and a unique index label
+    for i, (key, (x, y)) in enumerate(values.items(), start=1):
+        ax_bandwidth.scatter(x, y, s=90, marker="*", color="black", label=f"{key}")
+        ax_bandwidth.text(x + 5e-3, y + 0.002, f"{i}", color="black", fontsize=9, ha='left', va='bottom')
+
+    # Set axis labels
     ax_bandwidth.set_xlabel('Cavity length L (m)')
     ax_bandwidth.set_ylabel('Transmission coefficient')
 
+    # Legend with text-only entries (no markers)
+    legend_elements = [
+        mpatches.Patch(color='none', label=f"{i}. {key}")  # transparent patch (invisible)
+        for i, key in enumerate(values.keys(), start=1)
+    ]
+
+    ax_bandwidth.legend(handles=legend_elements, loc="upper left", prop={'size': 15}, handlelength=0, handletextpad=0)
     # Add text vertically on the right side of the axes
     text_y_pos = 0.5  # Vertically centered position
     text_x_pos = 0.92  # Right side position

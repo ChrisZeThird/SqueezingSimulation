@@ -4,8 +4,8 @@ number_points: 500
 cmap_name: 'gray'
 alpha: 0.8
 
-plot_bandwidth: False
-plot_waist: True
+plot_bandwidth: True
+plot_waist: False
 plot_kaertner: False
 plot_pump_power: False
 squeezing_wavelength: False
@@ -16,15 +16,15 @@ wavelength: 780e-9
 
 # Cavity parameters
 fixed_length: 600e-3
-min_L: 0.1
-max_L: 4.
-cavity_loss: 0.01
+min_L: 0.2
+max_L: .8
+cavity_loss: 0.03
 d_curved_min: 0
 d_curved_max: 100e-3
 
 # Transmission coefficients
 min_T: 0.
-max_T: 0.99
+max_T: 0.3
 R: 50e-3
 R1: 10e-2  # for Kaertner plot
 R2: 11e-2  # for Kaertner plot
