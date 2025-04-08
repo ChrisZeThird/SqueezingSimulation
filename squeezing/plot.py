@@ -16,7 +16,7 @@ colors = plt.cm.viridis(np.linspace(0, 1, len(escape_efficiencies)))  # Using a 
 
 
 # -- Squeezing and anti-squeezing versus pump power -- #
-def squeezing_vs_pump():
+def squeezing_vs_pump(omega=0.0):
     fig_pump_power, ax = plt.subplots(figsize=(16, 9))
     for idx, escape_efficiency in enumerate(escape_efficiencies):
         sx = noise_spectrum_x(omega=0.0, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon_array)
@@ -50,6 +50,7 @@ def squeezing_vs_pump():
                            title='Escape efficiency',
                            title_fontsize=pm.MEDIUM_SIZE-5,
                            fontsize=18)
+
     legend_eta._legend_box.align = "left"  # adjust alignment
     # legend_eta._legend_box.sep = 15  # change title padding
     ax.add_artist(legend_eta)
@@ -79,6 +80,8 @@ def squeezing_vs_wavelength(escape_efficiency=0.9, epsilon=0.1):
     sp = noise_spectrum_p(omega=omega_array, omega_c=settings.omega_c, escape_efficiency=escape_efficiency, epsilon=epsilon)
     plt.plot(omega_array/settings.omega_c, 10*np.log10(sx), color='k')
     plt.plot(omega_array/settings.omega_c, 10*np.log10(sp), color='k', linestyle='--')
+
+    # Add some point of interest
 
     # Create the legend (for line style)
     legend_quadrature = plt.legend(['$s_x$', '$s_p$'], loc='upper left', bbox_to_anchor=(1.0, 1), title='Quadratures')

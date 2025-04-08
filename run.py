@@ -9,10 +9,10 @@ from utils.settings import settings
 if __name__ == '__main__':
     # -- Squeezing -- #
     if settings.plot_pump_power:
-        squeezing_vs_pump()
+        squeezing_vs_pump(omega=0)
 
     if settings.squeezing_wavelength:
-        squeezing_vs_wavelength()
+        squeezing_vs_wavelength(escape_efficiency=0.55)
 
     if settings.plot_threshold:
         slider_threshold()
