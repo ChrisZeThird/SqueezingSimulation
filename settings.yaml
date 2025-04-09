@@ -1,31 +1,34 @@
 # Plot parameter
-number_points: 500
+number_points: 1000
+
+waist_vs: 'dc'
 
 cmap_name: 'gray'
 alpha: 0.8
 
-plot_bandwidth: True
-plot_waist: False
+plot_bandwidth: False
+plot_waist: True
 plot_kaertner: False
 plot_pump_power: False
 squeezing_wavelength: False
 plot_threshold: False
 
 # Wavelength
-wavelength: 780e-9
+wavelength: 852e-9
 
 # Cavity parameters
-fixed_length: 600e-3
+fixed_length: 500e-3
+fixed_d_curved: 150e-3
 min_L: 0.2
 max_L: .8
 cavity_loss: 0.03
-d_curved_min: 0
-d_curved_max: 100e-3
+d_curved_min: 0.
+d_curved_max: 0.25
 
 # Transmission coefficients
 min_T: 0.
 max_T: 0.3
-R: 50e-3
+R: 100e-3
 R1: 10e-2  # for Kaertner plot
 R2: 11e-2  # for Kaertner plot
 
@@ -35,7 +38,7 @@ range_freq: 0.1
 
 # Crystal parameters
 crystal_length: 10e-3
-crystal_index: 1.8396  # PPKTP refraction index
+crystal_index: 1.84  # PPKTP refraction index
 
 # Squeezing parameters
 omega_c: 10000000.0               # bandwidth of the cavity

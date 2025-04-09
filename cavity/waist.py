@@ -9,54 +9,96 @@ import utils.plot_parameters
 
 
 def waist():
-    d_curved = np.linspace(start=settings.d_curved_min, stop=settings.d_curved_max, num=settings.number_points)
+    """
+    Plot the waist with respect to the requested parameters, by default 'dc'. Other parameters are 'L', 'R', 'lc' (length
+    crystal)
+    :param plot_vs: string, can be 'dc', 'L', 'R', 'lc'
+    :return: A plot of the waist
+    """
+    # Default values
+    kwargs = {
+        'd_curved': settings.fixed_d_curved,
+        'L': settings.fixed_length,
+        'R': settings.R,
+        'l_crystal': settings.crystal_length,
+        'index_crystal': settings.crystal_index,
+        'wavelength': settings.wavelength
+    }
 
-    w1, w2, valid_indices_1, valid_indices_2 = cf.Beam_waist(d_curved=d_curved,
-                                                             L=settings.fixed_length,
-                                                             R=settings.R,
-                                                             l_crystal=settings.crystal_length,
-                                                             index_crystal=settings.crystal_index,
-                                                             wavelength=settings.wavelength)
+    plot_vs = settings.waist_vs  # settings to plot waist against specific parameter
+
+    # Determine the sweep variable and generate the array accordingly
+    if plot_vs == 'dc':
+        sweep_array = np.linspace(start=settings.d_curved_min, stop=settings.d_curved_max,
+                                  num=settings.number_points)
+        kwargs['d_curved'] = sweep_array
+        xlabel = r'Distance $d_{c}$ (m)'
+
+        box_text = (f"Fixed values:\n"
+                    f"L = {settings.fixed_length * 1e3:.1f} mm\n"
+                    f"R = {settings.R * 1e3:.1f} mm\n"
+                    f"$l_c$ = {settings.crystal_length * 1e3:.1f} mm")
+
+    elif plot_vs == 'L':
+        sweep_array = np.linspace(start=settings.min_L, stop=settings.max_L, num=settings.number_points)
+        kwargs['L'] = sweep_array
+        xlabel = r'Cavity round-trip length $L$ (m)'
+
+        box_text = (f"Fixed values:\n"
+                    f"$d_c$ = {settings.fixed_d_curved * 1e3:.1f} mm\n"
+                    f"R = {settings.R * 1e3:.1f} mm\n"
+                    f"$l_c$ = {settings.crystal_length * 1e3:.1f} mm")
+
+    elif plot_vs == 'R':
+        sweep_array = np.linspace(start=settings.min_R, stop=settings.max_R, num=settings.number_points)
+        kwargs['R'] = sweep_array
+        xlabel = r'Mirror curvature radius $R$ (m)'
+
+        box_text = (f"Fixed values:\n"
+                    f"$d_c$ = {settings.fixed_d_curved * 1e3:.1f} mm\n"
+                    f"L = {settings.fixed_length * 1e3:.1f} mm\n"
+                    f"$l_c$ = {settings.crystal_length * 1e3:.1f} mm")
+
+    elif plot_vs == 'lc':
+        sweep_array = np.linspace(start=settings.min_lc, stop=settings.max_lc, num=settings.number_points)
+        kwargs['l_crystal'] = sweep_array
+        xlabel = r'Crystal length $l_c$ (m)'
+
+        box_text = (f"Fixed values:\n"
+                    f"$d_c$ = {settings.fixed_d_curved * 1e3:.1f} mm\n"
+                    f"L = {settings.fixed_length * 1e3:.1f} mm\n"
+                    f"R = {settings.R * 1e3:.1f} mm")
+
+    else:
+        raise ValueError(f"Invalid plot_vs value '{plot_vs}'. Choose from 'dc', 'L', 'R', or 'lc'.")
+
+    q1, q2, w1, w2, valid_indices_1, valid_indices_2 = cf.Beam_waist(**kwargs)
+
+    if valid_indices_1[0].size == 0 or valid_indices_2[0].size == 0:
+        print("Invalid values encountered, can't proceed.")
+        return  # or return some default value / raise an exception
 
     # Plot waist
     fig_waist, ax1 = plt.subplots(figsize=(16, 9))
 
-    # Add waist 1
     color1 = 'tab:red'
-    ax1.set_xlabel(r'Distance $d_{c}$ (m)')
+    ax1.set_xlabel(xlabel)
     ax1.set_ylabel(r'Beam waist size $w_1$ (mm)', color=color1)
-    ax1.plot(d_curved[valid_indices_1], w1[valid_indices_1] * 1e3, color=color1)
+    ax1.plot(sweep_array[valid_indices_1], w1[valid_indices_1] * 1e3, color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
 
-    # Annotate maximum value
-    max_index = np.argmax(w1[valid_indices_1])
-    min_index = np.argmin(w1[valid_indices_1])
-    x_max = d_curved[valid_indices_1][max_index]
-    y_max = w1[valid_indices_1][max_index]
-    y_min = w1[valid_indices_1][min_index]
-    ax1.vlines(x=x_max, ymin=y_min*1e3, ymax=y_max*1e3, color='r', linestyles='--')
-    ax1.hlines(y=y_max*1e3, xmin=d_curved[valid_indices_1][0], xmax=x_max, color='r', linestyles='--')
-    ax1.plot(x_max, y_max*1e3, color='r', marker='o')
-    ax1.text(x_max, y_max*1e3 + 0.0003, r'$(d_{c}, w_1) = $' + f'({x_max:.3f}, {(y_max * 1e3):.3f})', color='r')
-
-    # Add waist 2
-    ax2 = ax1.twinx()  # instantiate a second Axes that shares the same x-axis
     color2 = 'tab:blue'
+    ax2 = ax1.twinx()
     ax2.set_ylabel(r'Beam waist size $w_2$ (mm)', color=color2)
-    ax2.plot(d_curved[valid_indices_2], w2[valid_indices_2] * 1e3, color=color2)
+    ax2.plot(sweep_array[valid_indices_2], w2[valid_indices_2] * 1e3, color=color2)
     ax2.tick_params(axis='y', labelcolor=color2)
 
-    # Print Rayleigh length
-    rayleigh_length = settings.crystal_index * np.pi * (y_max ** 2) / settings.wavelength
-    # print(rayleigh_length)
-
-    # Add a text box for the parameters
-    box_text = f"Cavity length: {settings.fixed_length * 1e3} mm\nMirror radius: {settings.R * 1e3} mm\nCrystal length: {settings.crystal_length * 1e3}mm"
-    text_box = AnchoredText(box_text, frameon=True, loc=4, pad=0.5)
+    # Display parameters used
+    text_box = AnchoredText(box_text, frameon=True, loc='upper right', pad=0.5)
     plt.setp(text_box.patch, facecolor='white', alpha=settings.alpha)
     plt.gca().add_artist(text_box)
 
-    fig_waist.tight_layout()  # otherwise the right y-label is slightly clipped
+    fig_waist.tight_layout()
     plt.show()
 
 

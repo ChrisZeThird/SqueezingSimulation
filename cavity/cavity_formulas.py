@@ -92,6 +92,21 @@ def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=1):
 
 
 # -- Tamagawa / Svelto -- #
+def q_parameter(A, B, C, D):
+    """
+    Calculates q parameter
+    :param A:
+    :param B:
+    :param C:
+    :param D:
+    :return:
+    """
+    q1 = - (B * D) / (A * C)  # wavefront at mirror 1
+    q2 = - (B * A) / (D * C)  # wavefront at mirror 2
+
+    return q1, q2
+
+
 def Beam_waist(d_curved, L, R, l_crystal, index_crystal=1, wavelength=780e-9):
     """
     Calculates the beam waist size in radius at the center of the nonlinear optical crystal and the intermediate
@@ -106,22 +121,21 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=1, wavelength=780e-9):
     """
     A1, B1, C1, D1 = ABCD_Matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
 
-    q1 = - (B1 * D1) / (A1 * C1)  # wavefront at mirror 1
-    # print('q1: ', q1)
+    q1, q2 = q_parameter(A1, B1, C1, D1)
+
     temp1 = np.full(shape=q1.shape, fill_value=np.nan, dtype=np.float32)
     valid_indices_1 = np.where(q1 >= 0)  # ensures the square root is taken for positive terms only
     # print('valid_indices_1: ', valid_indices_1)
     temp1[valid_indices_1] = np.sqrt(q1[valid_indices_1])
     w1 = (temp1 ** (1/4)) * ((wavelength / (index_crystal * np.pi)) ** (1 / 2))
 
-    q2 = - (B1 * A1) / (D1 * C1)  # wavefront at mirror 2
     temp2 = np.full(shape=q2.shape, fill_value=np.nan, dtype=np.float32)
     valid_indices_2 = np.where(q2 >= 0)  # ensures the square root is taken for positive terms only
     # print('valid_indices_2: ', valid_indices_2)
     temp2[valid_indices_2] = np.sqrt(q2[valid_indices_2])
     w2 = (temp2 ** (1 / 4)) * ((wavelength / (index_crystal * np.pi)) ** (1 / 2))
 
-    return w1, w2, valid_indices_1, valid_indices_2
+    return q1, q2, w1, w2, valid_indices_1, valid_indices_2
 
 
 def rayleigh_range(waist, wavelength, refraction_index):
