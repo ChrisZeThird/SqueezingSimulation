@@ -34,7 +34,7 @@ def waist():
         sweep_array = np.linspace(start=settings.d_curved_min, stop=settings.d_curved_max,
                                   num=settings.number_points)
         kwargs['d_curved'] = sweep_array
-        xlabel = r'Distance $d_{c}$ (m)'
+        xlabel = r'Distance $d_{c}$ (mm)'
 
         box_text = (f"Fixed values:\n"
                     f"L = {settings.fixed_length * 1e3:.1f} mm\n"
@@ -56,7 +56,7 @@ def waist():
     elif plot_vs == 'R':
         sweep_array = np.linspace(start=settings.min_R, stop=settings.max_R, num=settings.number_points)
         kwargs['R'] = sweep_array
-        xlabel = r'Mirror curvature radius $R$ (m)'
+        xlabel = r'Mirror curvature radius $R$ (mm)'
 
         box_text = (f"Fixed values:\n"
                     f"$d_c$ = {settings.fixed_d_curved * 1e3:.1f} mm\n"
@@ -67,7 +67,7 @@ def waist():
     elif plot_vs == 'lc':
         sweep_array = np.linspace(start=settings.min_lc, stop=settings.max_lc, num=settings.number_points)
         kwargs['l_crystal'] = sweep_array
-        xlabel = r'Crystal length $l_c$ (m)'
+        xlabel = r'Crystal length $l_c$ (mm)'
 
         box_text = (f"Fixed values:\n"
                     f"$d_c$ = {settings.fixed_d_curved * 1e3:.1f} mm\n"
@@ -81,7 +81,7 @@ def waist():
     # print(kwargs)
     z1, z2, w1, w2, valid_indices = cf.Beam_waist(**kwargs)
 
-    if valid_indices[0].size == 0 or valid_indices[0].size == 0:
+    if valid_indices[0][0].size == 0 or valid_indices[1][0].size == 0:
         print("Invalid values encountered, can't proceed.")
         print('q1: ', z1)
         print('q2: ', z2)
@@ -93,13 +93,13 @@ def waist():
     color1 = 'tab:red'
     ax1.set_xlabel(xlabel)
     ax1.set_ylabel(r'Beam waist size $w_1$ (mm)', color=color1)
-    ax1.plot(sweep_array[valid_indices], w1[valid_indices] * 1e3, color=color1)
+    ax1.plot(sweep_array[valid_indices[0]] * 1e3, w1[valid_indices[0]] * 1e3, color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
 
     color2 = 'tab:blue'
     ax2 = ax1.twinx()
     ax2.set_ylabel(r'Beam waist size $w_2$ (mm)', color=color2)
-    ax2.plot(sweep_array[valid_indices], w2[valid_indices] * 1e3, color=color2)
+    ax2.plot(sweep_array[valid_indices[1]] * 1e3, w2[valid_indices[1]] * 1e3, color=color2)
     ax2.tick_params(axis='y', labelcolor=color2)
 
     # Display parameters used

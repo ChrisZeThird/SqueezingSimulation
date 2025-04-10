@@ -22,8 +22,8 @@ fixed_d_curved: 87e-3
 min_L: 200e-3
 max_L: 900e-3
 cavity_loss: 0.03
-d_curved_min: 50e-3
-d_curved_max: 65e-3
+d_curved_min: 10e-3
+d_curved_max: 100e-3
 
 # Transmission coefficients
 min_T: 0.

@@ -79,13 +79,10 @@ def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=settings.crystal_index)
     :param index_crystal: Index of refraction of non-linear medium (by default 1)
     :return: Tuple (A1, B1, C1, D1)
     """
-
-    E = (L - d_curved) / 2
-
-    A1 = 1 - 2 * E / R
-    B1 = index_crystal * (E + (1/2) * (d_curved - l_crystal) * (1 - (2 * E) / R)) + (1/2) * l_crystal * (1 - (2 * E) / R)
+    A1 = 1 - (L - d_curved) / R
+    B1 = (L - d_curved) / 2 + ((d_curved - l_crystal)/2) * (1 - (L - d_curved) / R) + l_crystal * (1 - (L - d_curved) / R) / (2 * index_crystal)
     C1 = - 2 / R
-    D1 = index_crystal * (1 - (d_curved - l_crystal) / R) - l_crystal / R
+    D1 = 1 - (d_curved - l_crystal) / R - l_crystal / (index_crystal * R)
 
     return A1, B1, C1, D1
 
@@ -124,21 +121,19 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
     print('---------')
 
     temp1 = np.full(shape=z1.shape, fill_value=np.nan, dtype=np.float32)
-    valid_indices = np.where(z1 >= 0)  # ensures the square root is taken for positive terms only
+    valid_indices_1 = np.where(z1 >= 0)  # ensures the square root is taken for positive terms only
     # print('valid_indices_1: ', valid_indices_1)
-    temp1[valid_indices] = np.sqrt(z1[valid_indices])
-    w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * np.sqrt(temp1))  # the first waist is in the crystal of index n1
+    temp1[valid_indices_1] = np.sqrt(z1[valid_indices_1])
+    w1 = np.sqrt((wavelength / np.pi) * temp1)  # the first waist is in the crystal of index n1
 
-    # temp2 = np.full(shape=z2.shape, fill_value=np.nan, dtype=np.float32)
-    # valid_indices_2 = np.where(z2 >= 0)  # ensures the square root is taken for positive terms only
-    # # print('valid_indices_2: ', valid_indices_2)
-    # temp2[valid_indices_2] = np.sqrt(z2[valid_indices_2])
-    # w2 = (temp2 ** (1 / 4)) * ((wavelength / np.pi) ** (1 / 2))  # the second waist is in the air so n=1
+    temp2 = np.full(shape=z2.shape, fill_value=np.nan, dtype=np.float32)
+    valid_indices_2 = np.where(z2 >= 0)  # ensures the square root is taken for positive terms only
+    # print('valid_indices_2: ', valid_indices_2)
+    temp2[valid_indices_2] = np.sqrt(z2[valid_indices_2])
+    w2 = np.sqrt((wavelength / np.pi) * temp2)   # the second waist is in the air so n=1
 
-    w2 = index_crystal * w1 / (np.sqrt((C1 * z1) ** 2 + D1 ** 2))
-    print(f"C1*z1: {C1 * z1}")
-    print(f"D1: {D1}")
-    print('-------')
+    valid_indices = (valid_indices_1, valid_indices_2)
+
     return z1, z2, w1, w2, valid_indices
 
 
