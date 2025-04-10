@@ -1,3 +1,4 @@
 configargparse
 matplotlib
 numpy
+scipy

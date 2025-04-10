@@ -1,6 +1,9 @@
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 
+from scipy.interpolate import interp1d
+from scipy.optimize import root_scalar
+
 import numpy as np
 
 import cavity.cavity_formulas as cf
@@ -12,7 +15,6 @@ def waist():
     """
     Plot the waist with respect to the requested parameters, by default 'dc'. Other parameters are 'L', 'R', 'lc' (length
     crystal)
-    :param plot_vs: string, can be 'dc', 'L', 'R', 'lc'
     :return: A plot of the waist
     """
     # Default values
@@ -37,7 +39,8 @@ def waist():
         box_text = (f"Fixed values:\n"
                     f"L = {settings.fixed_length * 1e3:.1f} mm\n"
                     f"R = {settings.R * 1e3:.1f} mm\n"
-                    f"$l_c$ = {settings.crystal_length * 1e3:.1f} mm")
+                    f"$l_c$ = {settings.crystal_length * 1e3:.1f} mm\n"
+                    f"$\lambda$ = {settings.wavelength * 1e9} nm")
 
     elif plot_vs == 'L':
         sweep_array = np.linspace(start=settings.min_L, stop=settings.max_L, num=settings.number_points)
@@ -47,7 +50,8 @@ def waist():
         box_text = (f"Fixed values:\n"
                     f"$d_c$ = {settings.fixed_d_curved * 1e3:.1f} mm\n"
                     f"R = {settings.R * 1e3:.1f} mm\n"
-                    f"$l_c$ = {settings.crystal_length * 1e3:.1f} mm")
+                    f"$l_c$ = {settings.crystal_length * 1e3:.1f} mm\n"
+                    f"$\lambda$ = {settings.wavelength * 1e9} nm")
 
     elif plot_vs == 'R':
         sweep_array = np.linspace(start=settings.min_R, stop=settings.max_R, num=settings.number_points)
@@ -57,7 +61,8 @@ def waist():
         box_text = (f"Fixed values:\n"
                     f"$d_c$ = {settings.fixed_d_curved * 1e3:.1f} mm\n"
                     f"L = {settings.fixed_length * 1e3:.1f} mm\n"
-                    f"$l_c$ = {settings.crystal_length * 1e3:.1f} mm")
+                    f"$l_c$ = {settings.crystal_length * 1e3:.1f} mm\n"
+                    f"$\lambda$ = {settings.wavelength * 1e9} nm")
 
     elif plot_vs == 'lc':
         sweep_array = np.linspace(start=settings.min_lc, stop=settings.max_lc, num=settings.number_points)
@@ -67,15 +72,19 @@ def waist():
         box_text = (f"Fixed values:\n"
                     f"$d_c$ = {settings.fixed_d_curved * 1e3:.1f} mm\n"
                     f"L = {settings.fixed_length * 1e3:.1f} mm\n"
-                    f"R = {settings.R * 1e3:.1f} mm")
+                    f"R = {settings.R * 1e3:.1f} mm\n"
+                    f"$\lambda$ = {settings.wavelength * 1e9} nm")
 
     else:
         raise ValueError(f"Invalid plot_vs value '{plot_vs}'. Choose from 'dc', 'L', 'R', or 'lc'.")
 
-    q1, q2, w1, w2, valid_indices_1, valid_indices_2 = cf.Beam_waist(**kwargs)
+    # print(kwargs)
+    z1, z2, w1, w2, valid_indices = cf.Beam_waist(**kwargs)
 
-    if valid_indices_1[0].size == 0 or valid_indices_2[0].size == 0:
+    if valid_indices[0].size == 0 or valid_indices[0].size == 0:
         print("Invalid values encountered, can't proceed.")
+        print('q1: ', z1)
+        print('q2: ', z2)
         return  # or return some default value / raise an exception
 
     # Plot waist
@@ -84,13 +93,13 @@ def waist():
     color1 = 'tab:red'
     ax1.set_xlabel(xlabel)
     ax1.set_ylabel(r'Beam waist size $w_1$ (mm)', color=color1)
-    ax1.plot(sweep_array[valid_indices_1], w1[valid_indices_1] * 1e3, color=color1)
+    ax1.plot(sweep_array[valid_indices], w1[valid_indices] * 1e3, color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
 
     color2 = 'tab:blue'
     ax2 = ax1.twinx()
     ax2.set_ylabel(r'Beam waist size $w_2$ (mm)', color=color2)
-    ax2.plot(sweep_array[valid_indices_2], w2[valid_indices_2] * 1e3, color=color2)
+    ax2.plot(sweep_array[valid_indices], w2[valid_indices] * 1e3, color=color2)
     ax2.tick_params(axis='y', labelcolor=color2)
 
     # Display parameters used

@@ -41,7 +41,7 @@ class Settings:
     fixed_length: float = 600e-3  # reference length value
     min_L: float = 200e-3
     max_L: float = 100e-3
-    fixed_d_curved: float = 100e-3 # reference curved mirrors separation distance
+    fixed_d_curved: float = 100e-3  # reference curved mirrors separation distance
     d_curved_min: float = 0.0  # distance between curved mirrors
     d_curved_max: float = 100e-3
 
@@ -69,7 +69,7 @@ class Settings:
     crystal_length: float = 10e-3
     min_lc: float = 5e-3
     max_lc: float = 30e-3
-    crystal_index: float = 1.8396  # PPKTP refraction index
+    crystal_index: float = 1.84  # PPKTP refraction index
 
     def __init__(self):
         """

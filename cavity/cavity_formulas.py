@@ -68,46 +68,45 @@ def Pump_threshold(T, Loss, E):
 
 
 # -- Ray propagation -- #
-def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=1):
+def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=settings.crystal_index):
     """
-    Ray transfer matrix for a single pass in a ring bow-tie cavity.
+    Ray transfer matrix for a half single pass in a ring bow-tie cavity.
 
     :param L: Cavity round-trip length
     :param d_curved: Distance between curved mirrors
     :param R: Radii of curvature of curved mirror
     :param l_crystal: Length of non-linear crystal
     :param index_crystal: Index of refraction of non-linear medium (by default 1)
-    :return: Tuple (A, B, C, D)
+    :return: Tuple (A1, B1, C1, D1)
     """
 
     E = (L - d_curved) / 2
 
-    A1 = 1 - E / R
-    B1 = E + (d_curved - l_crystal) / 2 * (1 - E * (2 / R)) + l_crystal * (1 - E * (2 / R))/(2 * index_crystal)
+    A1 = 1 - 2 * E / R
+    B1 = index_crystal * (E + (1/2) * (d_curved - l_crystal) * (1 - (2 * E) / R)) + (1/2) * l_crystal * (1 - (2 * E) / R)
     C1 = - 2 / R
-    D1 = 1 - (d_curved - l_crystal) / R - l_crystal / (index_crystal * R)
-    # D1 = C1 * (l_crystal / (2 * index_crystal) - (d_curved - l_crystal) / 2) + 1
+    D1 = index_crystal * (1 - (d_curved - l_crystal) / R) - l_crystal / R
 
     return A1, B1, C1, D1
 
 
 # -- Tamagawa / Svelto -- #
-def q_parameter(A, B, C, D):
+def z_parameter(A1, B1, C1, D1):
     """
-    Calculates q parameter
-    :param A:
-    :param B:
-    :param C:
-    :param D:
+    Calculates z parameter
+    :param A1:
+    :param B1:
+    :param C1:
+    :param D1:
     :return:
     """
-    q1 = - (B * D) / (A * C)  # wavefront at mirror 1
-    q2 = - (B * A) / (D * C)  # wavefront at mirror 2
+    z1 = - (B1 * D1) / (A1 * C1)  # wavefront at mirror 1
+    z2 = - (A1 * B1) / (C1 * D1)  # wavefront at mirror 2
 
-    return q1, q2
+    return z1, z2
 
 
-def Beam_waist(d_curved, L, R, l_crystal, index_crystal=1, wavelength=780e-9):
+def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, wavelength=settings.wavelength):
     """
     Calculates the beam waist size in radius at the center of the nonlinear optical crystal and the intermediate
     between flat mirrors
@@ -120,22 +119,27 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=1, wavelength=780e-9):
     :return: Tuple (w1, w2, valid_indices)
     """
     A1, B1, C1, D1 = ABCD_Matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
+    z1, z2 = z_parameter(A1, B1, C1, D1)
+    print('z1, z2:', (z1, z2))
+    print('---------')
 
-    q1, q2 = q_parameter(A1, B1, C1, D1)
-
-    temp1 = np.full(shape=q1.shape, fill_value=np.nan, dtype=np.float32)
-    valid_indices_1 = np.where(q1 >= 0)  # ensures the square root is taken for positive terms only
+    temp1 = np.full(shape=z1.shape, fill_value=np.nan, dtype=np.float32)
+    valid_indices = np.where(z1 >= 0)  # ensures the square root is taken for positive terms only
     # print('valid_indices_1: ', valid_indices_1)
-    temp1[valid_indices_1] = np.sqrt(q1[valid_indices_1])
-    w1 = (temp1 ** (1/4)) * ((wavelength / (index_crystal * np.pi)) ** (1 / 2))
+    temp1[valid_indices] = np.sqrt(z1[valid_indices])
+    w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * np.sqrt(temp1))  # the first waist is in the crystal of index n1
 
-    temp2 = np.full(shape=q2.shape, fill_value=np.nan, dtype=np.float32)
-    valid_indices_2 = np.where(q2 >= 0)  # ensures the square root is taken for positive terms only
-    # print('valid_indices_2: ', valid_indices_2)
-    temp2[valid_indices_2] = np.sqrt(q2[valid_indices_2])
-    w2 = (temp2 ** (1 / 4)) * ((wavelength / (index_crystal * np.pi)) ** (1 / 2))
+    # temp2 = np.full(shape=z2.shape, fill_value=np.nan, dtype=np.float32)
+    # valid_indices_2 = np.where(z2 >= 0)  # ensures the square root is taken for positive terms only
+    # # print('valid_indices_2: ', valid_indices_2)
+    # temp2[valid_indices_2] = np.sqrt(z2[valid_indices_2])
+    # w2 = (temp2 ** (1 / 4)) * ((wavelength / np.pi) ** (1 / 2))  # the second waist is in the air so n=1
 
-    return q1, q2, w1, w2, valid_indices_1, valid_indices_2
+    w2 = index_crystal * w1 / (np.sqrt((C1 * z1) ** 2 + D1 ** 2))
+    print(f"C1*z1: {C1 * z1}")
+    print(f"D1: {D1}")
+    print('-------')
+    return z1, z2, w1, w2, valid_indices
 
 
 def rayleigh_range(waist, wavelength, refraction_index):
