@@ -53,9 +53,9 @@ def M2(L, d_curved, R, l_crystal, index_crystal):
     :param index_crystal:
     :return:
     """
-    m1 = M_free_space(d=(L - d_curved) / 2, n=1)
+    m1 = M_free_space(d=(L - d_curved) / 2, n=1.)
     m2 = M_focal(f=R / 2)
-    m3 = M_free_space(d=(d_curved - l_crystal)/2)
+    m3 = M_free_space(d=(d_curved - l_crystal)/2, n=1.)
     m4 = M_free_space(d=l_crystal, n=index_crystal)
 
     m_total = m1 @ m2 @ m3 @ m4 @ m3 @ m2 @ m1
