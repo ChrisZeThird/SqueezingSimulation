@@ -80,9 +80,9 @@ def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=settings.crystal_index)
     :return: Tuple (A1, B1, C1, D1)
     """
     A1 = 1 - (L - d_curved) / R
-    B1 = (L - d_curved) / 2 + ((d_curved - l_crystal)/2) * (1 - (L - d_curved) / R) + l_crystal * (1 - (L - d_curved) / R) / (2 * index_crystal)
+    B1 = index_crystal * ((L - d_curved) / 2 + ((d_curved - l_crystal)/2) * (1 - (L - d_curved) / R) + l_crystal * (1 - (L - d_curved) / R) / 2)
     C1 = - 2 / R
-    D1 = 1 - (d_curved - l_crystal) / R - l_crystal / (index_crystal * R)
+    D1 = index_crystal * (1 - (d_curved - l_crystal) / R) - l_crystal / R
 
     return A1, B1, C1, D1
 
@@ -124,7 +124,7 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
     valid_indices_1 = np.where(z1 >= 0)  # ensures the square root is taken for positive terms only
     # print('valid_indices_1: ', valid_indices_1)
     temp1[valid_indices_1] = np.sqrt(z1[valid_indices_1])
-    w1 = np.sqrt((wavelength / np.pi) * temp1)  # the first waist is in the crystal of index n1
+    w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * temp1)  # the first waist is in the crystal of index n1
 
     temp2 = np.full(shape=z2.shape, fill_value=np.nan, dtype=np.float32)
     valid_indices_2 = np.where(z2 >= 0)  # ensures the square root is taken for positive terms only
@@ -132,20 +132,11 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
     temp2[valid_indices_2] = np.sqrt(z2[valid_indices_2])
     w2 = np.sqrt((wavelength / np.pi) * temp2)   # the second waist is in the air so n=1
 
-    valid_indices = (valid_indices_1, valid_indices_2)
+    # w2 = index_crystal * w1 / np.sqrt((C1*temp1)**2 + D1**2)
+
+    valid_indices = (valid_indices_1, valid_indices_1)
 
     return z1, z2, w1, w2, valid_indices
-
-
-def rayleigh_range(waist, wavelength, refraction_index):
-    """
-
-    :param waist:
-    :param wavelength:
-    :param refraction_index:
-    :return:
-    """
-    return np.pi * refraction_index * (waist ** 2) / wavelength
 
 
 # -- Kaertner classnotes -- #
