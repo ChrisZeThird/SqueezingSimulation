@@ -1,9 +1,6 @@
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 
-from scipy.interpolate import interp1d
-from scipy.optimize import root_scalar
-
 import numpy as np
 
 import cavity.cavity_formulas as cf
