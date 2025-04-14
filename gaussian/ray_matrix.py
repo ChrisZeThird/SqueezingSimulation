@@ -25,7 +25,7 @@ def M_free_space(d, n=1.0):
 # Cavity propagation matrices
 def M1(L, d_curved, R, l_crystal, index_crystal):
     """
-    Propagation matrix starting in the middle of the crystal
+    Propagation matrix starting in the middle of the crystal (half round-trip)
     :param L:
     :param d_curved:
     :param R:
@@ -33,19 +33,20 @@ def M1(L, d_curved, R, l_crystal, index_crystal):
     :param index_crystal:
     :return:
     """
-    m1 = M_free_space(d=l_crystal/2, n=index_crystal)
+    # m1 = M_free_space(d=l_crystal/2, n=index_crystal)
+    m1 = M_free_space(d=l_crystal / 2, n=index_crystal)
     m2 = M_free_space(d=(d_curved - l_crystal)/2, n=1.)
     m3 = M_focal(f=R/2)
-    m4 = M_free_space(d=L - d_curved)
+    m4 = M_free_space(d=(L - d_curved)/2)
 
-    m_total = m1 @ m2 @ m3 @ m4 @ m3 @ m2 @ m1
+    m_total = m4 @ m3 @ m2 @ np.array([[1, 0], [0, index_crystal]]) @ m1
 
     return m_total
 
 
 def M2(L, d_curved, R, l_crystal, index_crystal):
     """
-    Propagation matrix starting in the middle of the flat mirrors
+    Propagation matrix starting in the middle of the flat mirrors (half round-trip)
     :param L:
     :param d_curved:
     :param R:
@@ -58,6 +59,6 @@ def M2(L, d_curved, R, l_crystal, index_crystal):
     m3 = M_free_space(d=(d_curved - l_crystal)/2, n=1.)
     m4 = M_free_space(d=l_crystal, n=index_crystal)
 
-    m_total = m1 @ m2 @ m3 @ m4 @ m3 @ m2 @ m1
+    m_total = m4 @ m3 @ m2 @ m1
 
     return m_total

@@ -33,11 +33,28 @@ def propagate(q, prop_matrix):
     return (A * q + B)/(C * q + D)
 
 
-def waist(q, wavelength):
+# def waist(q, wavelength):
+#     """
+#     Calculate the waist as a given location for a set q-parameter after propagation
+#     :param q:
+#     :param wavelength:
+#     :return:
+#     """
+#     return np.sqrt(q.imag * wavelength / np.pi)
+
+def waist(wavelength, prop_matrix, n=1.):
     """
-    Calculate the waist as a given location for a set q-parameter after propagation
-    :param q:
+    Waist expression from Tamagawa
     :param wavelength:
+    :param n:
+    :param prop_matrix:
     :return:
     """
-    return np.sqrt(q.imag * wavelength / np.pi)
+    A, B, C, D = prop_matrix[0, 0], prop_matrix[0, 1], prop_matrix[1, 0], prop_matrix[1, 1]
+    print('Stability condition: ', (A + D) / 2)
+    z1 = np.sqrt(- B * D / (A * C))
+    w1 = np.sqrt(wavelength * z1 / (n * np.pi))
+    w2 = n * w1 / np.sqrt((C * z1)**2 + D**2)
+
+    return w1, w2
+
