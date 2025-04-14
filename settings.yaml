@@ -14,10 +14,10 @@ squeezing_wavelength: False
 plot_threshold: False
 
 # Wavelength
-wavelength: 780e-9
+wavelength: 992e-9
 
 # Cavity parameters
-fixed_length: 600e-3
+fixed_length: 569e-3
 fixed_d_curved: 115e-3
 min_L: 200e-3
 max_L: 900e-3
@@ -38,7 +38,7 @@ range_freq: 0.1
 
 # Crystal parameters
 crystal_length: 20e-3
-crystal_index: 1.75  # PPKTP refraction index
+crystal_index: 1.84  # PPKTP refraction index
 
 # Squeezing parameters
 omega_c: 10000000.0               # bandwidth of the cavity
