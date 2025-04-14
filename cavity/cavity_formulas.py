@@ -117,8 +117,8 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
     """
     A1, B1, C1, D1 = ABCD_Matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
     z1, z2 = z_parameter(A1, B1, C1, D1)
-    print('z1, z2:', (z1, z2))
-    print('---------')
+    # print('z1, z2:', (z1, z2))
+    # print('---------')
 
     temp1 = np.full(shape=z1.shape, fill_value=np.nan, dtype=np.float32)
     valid_indices_1 = np.where(z1 >= 0)  # ensures the square root is taken for positive terms only

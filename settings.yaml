@@ -8,16 +8,15 @@ alpha: 0.8
 
 plot_bandwidth: False
 plot_waist: True
-plot_kaertner: False
 plot_pump_power: False
 squeezing_wavelength: False
 plot_threshold: False
 
 # Wavelength
-wavelength: 992e-9
+wavelength: 780e-9
 
 # Cavity parameters
-fixed_length: 569e-3
+fixed_length: 1000e-3
 fixed_d_curved: 115e-3
 min_L: 200e-3
 max_L: 900e-3

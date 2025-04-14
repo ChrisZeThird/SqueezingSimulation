@@ -2,3 +2,4 @@ configargparse
 matplotlib
 numpy
 scipy
+pandas

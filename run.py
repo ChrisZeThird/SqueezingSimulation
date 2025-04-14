@@ -1,5 +1,5 @@
 from cavity.bandwidth import bandwidth
-from cavity.waist import waist, Kaertner
+from cavity.waist import waist, plot_from_csv
 
 from squeezing.plot import squeezing_vs_pump, squeezing_vs_wavelength
 from squeezing.threshold import slider_threshold
@@ -23,8 +23,5 @@ if __name__ == '__main__':
 
     # -- Optimize waist -- #
     if settings.plot_waist:
-        waist()
-
-    # -- Kaertner class notes -- #
-    if settings.plot_kaertner:
-        Kaertner()
+        # waist()
+        plot_from_csv()

@@ -2,10 +2,15 @@ from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 
 import numpy as np
+import pandas as pd
 
 import cavity.cavity_formulas as cf
 from utils.settings import settings
 import utils.plot_parameters
+
+import csv
+import os
+from datetime import datetime
 
 
 def waist():
@@ -105,28 +110,63 @@ def waist():
     plt.gca().add_artist(text_box)
 
     fig_waist.tight_layout()
-    plt.show()
+    # plt.show()
+
+    # Find max of w1
+    max_idx = np.argmax(w1[valid_indices[0]])
+    max_w1 = w1[valid_indices[0]][max_idx]
+    associated_w2 = w2[valid_indices[0]][max_idx]
+    associated_param = sweep_array[valid_indices[0]][max_idx]
+
+    row = {
+        'timestamp': datetime.now().isoformat(timespec='seconds'),
+        'sweep_param': plot_vs,
+        'sweep_value_mm': associated_param * 1e3,
+        'max_w1_mm': max_w1 * 1e3,
+        'associated_w2_mm': associated_w2 * 1e3,
+        'L_mm': settings.fixed_length * 1e3,
+        'd_curved_mm': settings.fixed_d_curved * 1e3,
+        'R_mm': settings.R * 1e3,
+        'l_crystal_mm': settings.crystal_length * 1e3,
+        'index_crystal': settings.crystal_index,
+        'wavelength_nm': settings.wavelength * 1e9
+    }
+
+    # Define file path
+    log_path = 'waist_log.csv'
+    file_exists = os.path.isfile(log_path)
+
+    # Append to CSV
+    with open(log_path, 'a', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=row.keys())
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(row)
 
 
-def Kaertner():
-    length_kaertner = np.linspace(start=settings.min_L, stop=settings.max_L, num=settings.number_points)
+def plot_from_csv(filename="waist_log.csv"):
+    # Load the CSV
+    df = pd.read_csv(filename)
 
-    w1 = cf.waist_mirror1(R1=settings.R1, R2=settings.R2, L=length_kaertner, wavelength=settings.wavelength)
-    w2 = cf.waist_mirror3(R1=settings.R1, R2=settings.R2, L=length_kaertner, wavelength=settings.wavelength)
-    w0 = cf.waist_intracavity(R1=settings.R1, R2=settings.R2, L=length_kaertner, wavelength=settings.wavelength)
+    # Filter only for given sweep
+    df_dc = df[df["sweep_param"] == settings.waist_vs]
 
-    fig_waist_kaertner, ax_kaertner = plt.subplots(nrows=3, ncols=1)
+    # Group by wavelength and plot one line per group
+    plt.figure(figsize=(8, 5))
 
-    ax_kaertner[0].plot(length_kaertner * 1e2, w1 / np.sqrt(settings.wavelength * settings.R1 / np.pi), color='red')
-    ax_kaertner[0].set_ylabel(r'$w_1 / (\lambda R_1 / \pi)^{1/2}$', fontsize=12)
+    for wavelength, group in df_dc.groupby("wavelength_nm"):
+        group_sorted = group.sort_values("L_mm")
+        plt.plot(group_sorted["L_mm"],
+                 group_sorted["sweep_value_mm"],
+                 marker='o',
+                 label=f"{wavelength} nm",
+                 alpha=1)
+        break
 
-    ax_kaertner[1].plot(length_kaertner * 1e2, w2 / np.sqrt(settings.wavelength * settings.R2 / np.pi), color='red')
-    ax_kaertner[1].set_ylabel(r'$w_2 / (\lambda R_2 / \pi)^{1/2}$', fontsize=12)
-
-    ax_kaertner[2].plot(length_kaertner * 1e2, w0 / np.sqrt(settings.wavelength / np.pi), color='red')
-    ax_kaertner[2].set_ylabel(r'$w_0 / (\lambda / \pi)^{1/2}$', fontsize=12)
-
-    ax_kaertner[2].set_xlabel('Cavity length L (cm)', fontsize=18)
-
-    fig_waist_kaertner.tight_layout()
+    plt.xlabel("$L$ (mm)")
+    plt.ylabel("$d_c$ (mm) ")
+    plt.title("Optimal Mirror Distance $d_c$ vs Cavity Length $L$ for max $w_1$")
+    # plt.legend(title="Wavelength")
+    plt.grid(True)
+    plt.tight_layout()
     plt.show()
