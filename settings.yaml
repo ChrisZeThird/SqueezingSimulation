@@ -16,7 +16,7 @@ plot_threshold: False
 wavelength: 780e-9
 
 # Cavity parameters
-fixed_length: 1000e-3
+fixed_length: 550e-3
 fixed_d_curved: 115e-3
 min_L: 200e-3
 max_L: 900e-3
@@ -27,7 +27,7 @@ d_curved_max: 300e-3
 # Transmission coefficients
 min_T: 0.
 max_T: 0.3
-R: 100e-3
+R: 150e-3
 R1: 10e-2  # for Kaertner plot
 R2: 11e-2  # for Kaertner plot
 
