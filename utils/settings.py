@@ -33,6 +33,7 @@ class Settings:
     plot_pump_power: bool = False   # squeezing and anti-squeezing versus pump power
     squeezing_wavelength: bool = False  # squeezing and anti-squeezing versus wavelength
     plot_threshold: bool = False    # find pump threshold value within range for T, L and E_NL
+    plug_value: bool = False        # plug some values to have an idea of everything all at once
 
     # -- Universal constants -- #
     c: float = 3e8  # speed of light (m/s)
