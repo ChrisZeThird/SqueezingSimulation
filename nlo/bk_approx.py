@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
-from scipy.constants import c, pi
+from scipy.constants import c, pi, epsilon_0
 from scipy.special import erf
 from utils.settings import settings
 
@@ -35,7 +35,9 @@ def c3(B):
     return 0.796 - (0.506/(B + 0.378)) + (0.0601 / (0.421 + (B - 0.673)**2)) + (0.0329/(0.0425 + (B - 0.221)**3))
 
 
-def hm(xi, kappa=1, B=0):
+def hm(xi, kappa, B=0):
+    if B == 0:
+        kappa = 1
     numerator = np.arctan(c1(B) * kappa * xi)
     denominator = c1(B) + c2(B) * xi * np.arctan(c3(B) * xi)
     return numerator / denominator
@@ -45,6 +47,32 @@ def hm(xi, kappa=1, B=0):
 def optimal_waist(crystal_length=settings.crystal_length, wavelength=settings.wavelength, index=settings.crystal_index, xi_opt=2.84):
     w_opt = np.sqrt(crystal_length * wavelength / (2 * pi * xi_opt))
     return w_opt
+
+
+def prefactor_eta(wavelength_1=settings.wavelength, wavelength_2=settings.wavelength / 2, chi_2=14.9,
+                  L_c=settings.crystal_length, n_1=settings.crystal_index, n_2=1):
+    """
+    Updated pre-factor for eta based on the formula provided.
+    :param wavelength_1: Wavelength of the fundamental wave
+    :param wavelength_2: Wavelength of the harmonic wave (second harmonic)
+    :param chi_2: Second-order nonlinear susceptibility (χ^(2)) of the crystal
+    :param L_c: Crystal length
+    :param n_1: Refractive index of the fundamental wave
+    :param n_2: Refractive index of the harmonic wave
+    :return: The prefactor eta
+    """
+    # Convert wavelengths to angular frequencies (omega)
+    omega_1 = 2 * pi * c / wavelength_1
+    omega_2 = 2 * pi * c / wavelength_2
+
+    # Convert wavelengths to wave vectors (k)
+    k_1 = 2 * pi * n_1 / wavelength_1
+    k_2 = 2 * pi * n_1 / wavelength_1
+
+    # Calculate eta
+    eta = ((omega_2 ** 2) * (chi_2 ** 2) * k_1 * L_c) / (8 * (n_1 ** 2) * n_2 * epsilon_0 * (c ** 3) * pi)
+
+    return eta
 
 
 # Plot setup
@@ -74,7 +102,13 @@ def update(val):
 
         # Update the text for the scatter point
         text.set_position((np.log10(xi) + 0.05, hm_val_at_xi))
-        text.set_text(f"{hm_val_at_xi:.2e}")  # Update the value
+        text.set_text(f"{hm_val_at_xi:.3e}")  # Update the value
+
+    # Calculate eta using the prefactor and hm for B=0
+    eta_val = prefactor_eta() * hm(xi, kappa=1, B=0)
+
+    # Update eta text box
+    eta_text.set_text(f"$\\eta = {eta_val:.3e}$")
 
     # Update the plot without re-drawing the entire figure
     fig.canvas.draw_idle()
@@ -108,7 +142,7 @@ for walkoff in [0] + B_values:
     scatter_points.append(scatter)
 
     # Create the text annotation
-    text = ax.text(np.log10(xi_default) + 0.05, hm_val_at_xi, f"{hm_val_at_xi:.2e}", color='black', fontsize=10, verticalalignment='bottom')
+    text = ax.text(np.log10(xi_default) + 0.05, hm_val_at_xi, f"{hm_val_at_xi:.3e}", color='black', fontsize=10, verticalalignment='bottom')
     text_annotations.append(text)
 
 ax.set_xlabel(r"$\log_{10}(\xi)$")
@@ -126,6 +160,9 @@ waist_slider = Slider(ax_slider, 'Waist', 15e-6, 65e-6, valinit=waist_default, v
 
 # Set slider update function
 waist_slider.on_changed(update)
+
+# Add text box for eta value
+eta_text = ax.text(0.1, 0.95, "", transform=ax.transAxes, fontsize=12, verticalalignment='top', horizontalalignment='right', bbox=dict(facecolor='white', alpha=0.7))
 
 # Show the plot with slider
 plt.show()
