@@ -49,7 +49,7 @@ def optimal_waist(crystal_length=settings.crystal_length, wavelength=settings.wa
     return w_opt
 
 
-def prefactor_eta(wavelength_1=settings.wavelength, wavelength_2=settings.wavelength / 2, chi_2=14.9,
+def prefactor_eta(wavelength_1=settings.wavelength, wavelength_2=settings.wavelength / 2, chi_2=14.9e-12,
                   L_c=settings.crystal_length, n_1=settings.crystal_index, n_2=1):
     """
     Updated pre-factor for eta based on the formula provided.
