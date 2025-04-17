@@ -5,6 +5,8 @@ from scipy.constants import c, pi
 from scipy.special import erf
 from utils.settings import settings
 
+import utils.plot_parameters as pm
+
 
 # Updated Xi function
 def Xi(crystal_length, waist, wavelength, index):
@@ -79,7 +81,7 @@ def update(val):
 
 
 # Create the figure and axis
-fig, ax = plt.subplots(figsize=(8, 6))
+fig, ax = plt.subplots(figsize=(16,9))
 
 # Plot the curves for B values (initial setup)
 ax.plot(log_xi, hm(xi_vals, kappa=1, B=0), label="B = 0")
@@ -114,7 +116,7 @@ ax.set_ylabel(r"$h_m(\xi)$")
 ax.set_yscale("log")
 ax.set_ylim(1e-3, 1e1)
 ax.set_title(r"$h_m(\xi)$ vs $\log_{10}(\xi)$ for different $B$")
-ax.legend()
+ax.legend(fontsize=18)
 ax.grid(True)
 plt.tight_layout()
 
