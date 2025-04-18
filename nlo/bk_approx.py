@@ -35,28 +35,34 @@ def c3(B):
     return 0.796 - (0.506/(B + 0.378)) + (0.0601 / (0.421 + (B - 0.673)**2)) + (0.0329/(0.0425 + (B - 0.221)**3))
 
 
+# print(c1(0), c2(0), c3(0))
+# print(np.arctan(c1(0))/(c1(0) + c2(0)*np.arctan(c3(0))))
+
+
 def hm(xi, kappa, B=0):
     if B == 0:
         kappa = 1
     numerator = np.arctan(c1(B) * kappa * xi)
     denominator = c1(B) + c2(B) * xi * np.arctan(c3(B) * xi)
-    return numerator / denominator
+
+    result = numerator/denominator
+    return result
 
 
 # Define optimal waist calculation
 def optimal_waist(crystal_length=settings.crystal_length, wavelength=settings.wavelength, index=settings.crystal_index, xi_opt=2.84):
-    w_opt = np.sqrt(crystal_length * wavelength / (2 * pi * xi_opt))
+    w_opt = np.sqrt(crystal_length * wavelength / (2 * pi * index * xi_opt))
     return w_opt
 
 
 def prefactor_eta(wavelength_1=settings.wavelength, wavelength_2=settings.wavelength / 2, chi_2=14.9e-12,
                   L_c=settings.crystal_length, n_1=settings.crystal_index, n_2=1):
     """
-    Updated pre-factor for eta based on the formula provided.
+    Updated pre-factor for eta based on the formula provided (S. Burks).
+    :param L_c: Crystal length
     :param wavelength_1: Wavelength of the fundamental wave
     :param wavelength_2: Wavelength of the harmonic wave (second harmonic)
-    :param chi_2: Second-order nonlinear susceptibility (χ^(2)) of the crystal
-    :param L_c: Crystal length
+    :param chi_2: Second-order nonlinear susceptibility (χ^(2)) of the crystal    :param L_c:  length
     :param n_1: Refractive index of the fundamental wave
     :param n_2: Refractive index of the harmonic wave
     :return: The prefactor eta
@@ -67,10 +73,12 @@ def prefactor_eta(wavelength_1=settings.wavelength, wavelength_2=settings.wavele
 
     # Convert wavelengths to wave vectors (k)
     k_1 = 2 * pi * n_1 / wavelength_1
-    k_2 = 2 * pi * n_1 / wavelength_1
+    k_2 = 2 * pi * n_2 / wavelength_2
 
     # Calculate eta
-    eta = ((omega_2 ** 2) * (chi_2 ** 2) * k_1 * L_c) / (8 * (n_1 ** 2) * n_2 * epsilon_0 * (c ** 3) * pi)
+    # eta = ((omega_2 ** 2) * (chi_2 ** 2) * k_1 * L_c) / (8 * (n_1 ** 2) * n_2 * epsilon_0 * (c ** 3) * pi)
+    # eta = (2 * omega_1**2 * chi_2**2 * L_c * k_1)/(pi * c**3 * epsilon_0 * n_1**2 * n_2)
+    eta = (4 * omega_1**2 * chi_2**2 * L_c)/(epsilon_0 * c**3 * wavelength_1 * n_1**2)
 
     return eta
 
@@ -152,10 +160,13 @@ ax.set_ylim(1e-3, 1e1)
 ax.set_title(r"$h_m(\xi)$ vs $\log_{10}(\xi)$ for different $B$")
 ax.legend(fontsize=18)
 ax.grid(True)
+
+plt.subplots_adjust(bottom=0.15)  # <-- This adds space for the slider
+
 plt.tight_layout()
 
 # Add slider for waist adjustment
-ax_slider = plt.axes([0.25, 0.01, 0.65, 0.03], facecolor='lightgoldenrodyellow')
+ax_slider = plt.axes([0.25, 0.005, 0.65, 0.025], facecolor='lightgoldenrodyellow')
 waist_slider = Slider(ax_slider, 'Waist', 15e-6, 65e-6, valinit=waist_default, valstep=0.02e-6)
 
 # Set slider update function
