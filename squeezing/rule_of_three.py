@@ -63,6 +63,7 @@ for author, subsystems in db_data.items():
 
 # Get all authors who have OPO entries
 authors = [key.split(":")[0] for key in opo_entries.keys()]
+author_colors = {author: plt.cm.tab10(i % 10) for i, author in enumerate(authors)}
 
 # Set our experiment parameters
 wavelength = 0.780  # µm
@@ -81,7 +82,7 @@ colors = plt.cm.tab10(np.linspace(0, 1, len(authors)))  # Distinct colors
 # Collect handles and labels for the legend
 handles, labels = [], []
 
-for idx, author in enumerate(authors):
+for author in authors:
     key = f"{author}:opo"
     if key not in opo_entries:
         continue
@@ -99,7 +100,7 @@ for idx, author in enumerate(authors):
     round_trip_ratio = safe_divide(round_trip, opo.get("cavity_length_mm"))
     roc_ratio = safe_divide(roc, opo.get("roc1_mm"))
 
-    print(power_ratio)
+    # print(power_ratio)
     # Expected squeezing
     S = opo["squeezing_dB"]
     expected_squeezing_power = safe_multiply(S, index_ratio, power_ratio)
@@ -108,17 +109,16 @@ for idx, author in enumerate(authors):
     expected_squeezing_roc = safe_multiply(S, index_ratio, roc_ratio)
 
     # Plot each line for subplots
-    line_power, = axes[0, 0].plot(input_power, expected_squeezing_power, label=author, color=colors[idx])
-    line_crystal, = axes[0, 1].plot(length_crystal, expected_squeezing_crystal, '-s', label=author, color=colors[idx])
-    line_coupler, = axes[1, 0].plot(output_coupler, expected_squeezing_coupler, label=author, color=colors[idx])
-    line_roc, = axes[1, 1].plot(roc, expected_squeezing_roc, '-s', label=author, color=colors[idx])
+    color = author_colors[author]
+    line_power, = axes[0, 0].plot(input_power, expected_squeezing_power, label=author, color=color)
+    line_crystal, = axes[0, 1].plot(length_crystal, expected_squeezing_crystal, '-s', label=author, color=color)
+    line_coupler, = axes[1, 0].plot(output_coupler, expected_squeezing_coupler, label=author, color=color)
+    line_roc, = axes[1, 1].plot(roc, expected_squeezing_roc, '-s', label=author, color=color)
 
-    # Add each line to the handles list (to be used in a single legend)
-    handles.append(line_power)
-    handles.append(line_crystal)
-    handles.append(line_coupler)
-    handles.append(line_roc)
-    labels.append(author)
+    # Append just one line per author to legend handles
+    if author not in labels:
+        handles.append(line_power)
+        labels.append(author)
 
     # # Mark reference points
     # axes[0, 0].plot(opo["input_power_mW"], 3, 'ko')
@@ -132,8 +132,8 @@ axes[0, 1].set_title("2) Squeezing vs. Crystal Length (mm)")
 axes[1, 0].set_title("3) Squeezing vs. Output Coupler")
 axes[1, 1].set_title("4) Squeezing vs. Mirror ROC (mm)")
 
-# Add single legend for the whole figure
-fig.legend(handles, labels, loc='center', ncol=2)
+# Add a single legend for the entire figure
+fig.legend(handles, labels, loc="lower center", ncol=4, fontsize=12)
 
 # Add caption
 caption = (
