@@ -78,7 +78,7 @@ round_trip = np.linspace(start=450, stop=600, num=100)
 output_coupler = np.array([0.01, 0.02, 0.05, 0.07, 0.10, 0.12, 0.15])
 
 # Create figure and grid layout
-fig = plt.figure(figsize=(16, 11))
+fig = plt.figure()
 gs = GridSpec(3, 2, height_ratios=[1, 1, 0.2], hspace=0.4)
 
 axes = [
@@ -127,23 +127,22 @@ for author in authors:
         labels.append(author)
 
 # Titles
-axes[0].set_title("1) Squeezing vs. Input Power (mW)", fontsize=15)
-axes[1].set_title("2) Squeezing vs. Crystal Length (mm)", fontsize=15)
-axes[2].set_title("3) Squeezing vs. Output Coupler", fontsize=15)
-axes[3].set_title("4) Squeezing vs. Mirror ROC (mm)", fontsize=15)
+axes[0].set_title("1) Squeezing vs. Input Power (mW)", fontsize=20)
+axes[1].set_title("2) Squeezing vs. Crystal Length (mm)", fontsize=20)
+axes[2].set_title("3) Squeezing vs. Output Coupler", fontsize=20)
+axes[3].set_title("4) Squeezing vs. Mirror ROC (mm)", fontsize=20)
 
 # Legend (centered below plots)
-fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.03), ncol=4, fontsize=12)
+fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.03), ncol=4, fontsize=18)
 
 # Caption
-caption = (
-    r"The expected squeezing at 780 nm is estimated using: "
-    r"$S_{780} = S_{\lambda} \times R_P \times R_L \times R_C \times R_R \times R_n$, "
-    "where each R represents the ratio between the value at 780 nm and the reference value from each article "
-    "for input power, crystal length, output coupler, and mirror ROC. "
-    "Black circles show reference points from each paper."
-)
-caption_ax.text(0.5, 0.5, caption, ha="center", va="center", fontsize=12, wrap=True)
+# caption = (
+#     r"The expected squeezing at 780 nm is estimated using: "
+#     r"$S_{780} = S_{\lambda} \times R_P \times R_L \times R_C \times R_R \times R_n$, "
+#     "where each R represents the ratio between the value at 780 nm and the reference value from each article "
+#     "for input power, crystal length, output coupler, and mirror ROC."
+# )
+# caption_ax.text(0.5, 0.5, caption, ha="center", va="center", fontsize=12, wrap=True)
 
 plt.tight_layout(rect=[0, 0.12, 1, 1])
 plt.show()

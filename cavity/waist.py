@@ -21,7 +21,8 @@ def waist():
     crystal)
     :return: A plot of the waist
     """
-    length_test = np.linspace(start=500, stop=800, num=100) * 1e-3
+    # length_test = np.linspace(start=500, stop=800, num=100) * 1e-3
+    length_test = np.array([settings.fixed_length])
     for i in range(len(length_test)):
         # Default values
         kwargs = {
@@ -95,58 +96,58 @@ def waist():
             return  # or return some default value / raise an exception
 
         # Plot waist
-        # fig_waist, ax1 = plt.subplots(figsize=(16, 9))
-        #
-        # color1 = 'tab:red'
-        # ax1.set_xlabel(xlabel)
-        # ax1.set_ylabel(r'Beam waist size $w_1$ (mm)', color=color1)
-        # ax1.plot(sweep_array[valid_indices[0]] * 1e3, w1[valid_indices[0]] * 1e3, color=color1)
-        # ax1.tick_params(axis='y', labelcolor=color1)
-        #
-        # color2 = 'tab:blue'
-        # ax2 = ax1.twinx()
-        # ax2.set_ylabel(r'Beam waist size $w_2$ (mm)', color=color2)
-        # ax2.plot(sweep_array[valid_indices[1]] * 1e3, w2[valid_indices[1]] * 1e3, color=color2)
-        # ax2.tick_params(axis='y', labelcolor=color2)
-        #
-        # # Display parameters used
-        # text_box = AnchoredText(box_text, frameon=True, loc='upper right', pad=0.5)
-        # plt.setp(text_box.patch, facecolor='white', alpha=settings.alpha)
-        # plt.gca().add_artist(text_box)
-        #
-        # fig_waist.tight_layout()
-        # plt.show()
+        fig_waist, ax1 = plt.subplots(figsize=(16, 9))
+
+        color1 = 'tab:red'
+        ax1.set_xlabel(xlabel)
+        ax1.set_ylabel(r'Beam waist size $w_1$ (mm)', color=color1)
+        ax1.plot(sweep_array[valid_indices[0]] * 1e3, w1[valid_indices[0]] * 1e3, color=color1)
+        ax1.tick_params(axis='y', labelcolor=color1)
+
+        color2 = 'tab:blue'
+        ax2 = ax1.twinx()
+        ax2.set_ylabel(r'Beam waist size $w_2$ (mm)', color=color2)
+        ax2.plot(sweep_array[valid_indices[1]] * 1e3, w2[valid_indices[1]] * 1e3, color=color2)
+        ax2.tick_params(axis='y', labelcolor=color2)
+
+        # Display parameters used
+        text_box = AnchoredText(box_text, frameon=True, loc='upper right', pad=0.5)
+        plt.setp(text_box.patch, facecolor='white', alpha=settings.alpha)
+        plt.gca().add_artist(text_box)
+
+        fig_waist.tight_layout()
+        plt.show()
 
         # Find max of w1
-        max_idx = np.argmax(w1[valid_indices[0]])
-        max_w1 = w1[valid_indices[0]][max_idx]
-        associated_w2 = w2[valid_indices[0]][max_idx]
-        associated_param = sweep_array[valid_indices[0]][max_idx]
-
-        row = {
-            'timestamp': datetime.now().isoformat(timespec='seconds'),
-            'sweep_param': plot_vs,
-            'sweep_value_mm': associated_param * 1e3,
-            'max_w1_mm': max_w1 * 1e3,
-            'associated_w2_mm': associated_w2 * 1e3,
-            'L_mm': length_test[i] * 1e3,  # length_test[i]
-            'd_curved_mm': settings.fixed_d_curved * 1e3,
-            'R_mm': settings.R * 1e3,
-            'l_crystal_mm': settings.crystal_length * 1e3,
-            'index_crystal': settings.crystal_index,
-            'wavelength_nm': settings.wavelength * 1e9
-        }
-
-        # Define file path
-        log_path = 'waist_log.csv'
-        file_exists = os.path.isfile(log_path)
-
-        # Append to CSV
-        with open(log_path, 'a', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=row.keys())
-            if not file_exists:
-                writer.writeheader()
-            writer.writerow(row)
+        # max_idx = np.argmax(w1[valid_indices[0]])
+        # max_w1 = w1[valid_indices[0]][max_idx]
+        # associated_w2 = w2[valid_indices[0]][max_idx]
+        # associated_param = sweep_array[valid_indices[0]][max_idx]
+        #
+        # row = {
+        #     'timestamp': datetime.now().isoformat(timespec='seconds'),
+        #     'sweep_param': plot_vs,
+        #     'sweep_value_mm': associated_param * 1e3,
+        #     'max_w1_mm': max_w1 * 1e3,
+        #     'associated_w2_mm': associated_w2 * 1e3,
+        #     'L_mm': length_test[i] * 1e3,  # length_test[i]
+        #     'd_curved_mm': settings.fixed_d_curved * 1e3,
+        #     'R_mm': settings.R * 1e3,
+        #     'l_crystal_mm': settings.crystal_length * 1e3,
+        #     'index_crystal': settings.crystal_index,
+        #     'wavelength_nm': settings.wavelength * 1e9
+        # }
+        #
+        # # Define file path
+        # log_path = 'waist_log.csv'
+        # file_exists = os.path.isfile(log_path)
+        #
+        # # Append to CSV
+        # with open(log_path, 'a', newline='') as csvfile:
+        #     writer = csv.DictWriter(csvfile, fieldnames=row.keys())
+        #     if not file_exists:
+        #         writer.writeheader()
+        #     writer.writerow(row)
 
 
 def plot_from_csv(filename="waist_log.csv"):

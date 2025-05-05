@@ -80,12 +80,20 @@ def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=settings.crystal_index)
     :return: Tuple (A1, B1, C1, D1)
     """
     A1 = 1 - (L - d_curved) / R
-    B1 = ((L - d_curved) / 2 + ((d_curved - l_crystal)/2) * (1 - (L - d_curved) / R) + l_crystal * (1 - (L - d_curved) / R) / (2*index_crystal))
+    B1 = ((L - d_curved) / 2 + ((d_curved - l_crystal) / 2) * (1 - (L - d_curved) / R)) / index_crystal + l_crystal * (1 - (L - d_curved) / R) / 2
     C1 = - 2 / R
-    D1 = (1 - (d_curved - l_crystal) / R) - l_crystal / (index_crystal*R)
-
-    # print(A1*D1 - C1*B1)
+    D1 = (1 - (d_curved - l_crystal) / R) / index_crystal - l_crystal / R
     return A1, B1, C1, D1
+
+    # MASADA
+    # E = -l_crystal/2 + (d_curved - l_crystal)/2 * index_crystal
+    # F = -2/R * E + index_crystal
+    #
+    # A = 1 - (L - d_curved) / R
+    # B = E + (L - d_curved)/2 * F
+    # C = -2/R
+    # D = F
+    # return A, B, C, D
 
 
 # -- Tamagawa / Svelto -- #
@@ -118,18 +126,14 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
     """
     A1, B1, C1, D1 = ABCD_Matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
     z1, z2 = z_parameter(A1, B1, C1, D1)
-    # print('z1, z2:', (z1, z2))
-    # print('---------')
 
     temp1 = np.full(shape=z1.shape, fill_value=np.nan, dtype=np.float32)
     valid_indices_1 = np.where(z1 >= 0)  # ensures the square root is taken for positive terms only
-    # print('valid_indices_1: ', valid_indices_1)
     temp1[valid_indices_1] = np.sqrt(z1[valid_indices_1])
     w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * temp1)  # the first waist is in the crystal of index n1
 
     temp2 = np.full(shape=z2.shape, fill_value=np.nan, dtype=np.float32)
     valid_indices_2 = np.where(z2 >= 0)  # ensures the square root is taken for positive terms only
-    # print('valid_indices_2: ', valid_indices_2)
     temp2[valid_indices_2] = np.sqrt(z2[valid_indices_2])
     w2 = np.sqrt((wavelength / np.pi) * temp2)   # the second waist is in the air so n=1
 
@@ -176,3 +180,15 @@ def effective_Rayleigh_length(L, l, refractive_index, R):
     """
     eff_length = effective_length(L, l, refractive_index)
     return np.sqrt(eff_length * (R - eff_length))
+
+
+def stability_condition(A, D):
+    """
+    Compute the stability condition for a symmetrical cavity
+    :param A:
+    :param D:
+    :return:
+    """
+    s = (A+D) / 2
+    # check where -1 < (A+D)/2 < 1
+    return np.logical_and(s > -1, s < 1)
