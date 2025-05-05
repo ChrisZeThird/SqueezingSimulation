@@ -26,55 +26,56 @@ def out_shg_sorensen(input_coupler, loss, input_power, nonlinear_efficiency):
 
 # Parameters
 loss = 0.02
-nonlinear_efficiency = 0.02  # /W
-input_powers = [0.1, 0.2, 0.4, 0.6, 0.8]  # in Watts
-input_couplers = np.linspace(0.001, 0.25, 300)
+nonlinear_efficiency = 0.02
 
-# Plot (a): Output SHG vs input coupler for various input powers
 plt.figure(figsize=(12, 5))
-
+# Subplot (a): Output SHG vs input coupler for various input powers
 plt.subplot(1, 2, 1)
-max_outputs = []
+input_powers = [0.1, 0.2, 0.4, 0.6, 0.8]  # in Watts
+input_couplers = np.linspace(0.01, 0.3, 300)
+colors = plt.cm.viridis(np.linspace(0, 1, len(input_powers)))
+optimal_T1_list = []
 
-for P1 in input_powers:
+for idx, P1 in enumerate(input_powers):
     outputs = [out_shg_sorensen(T1, loss, P1, nonlinear_efficiency) for T1 in input_couplers]
-    plt.plot(input_couplers * 100, outputs, label=f'{int(P1 * 1e3)} mW')
-    max_outputs.append(outputs)
+    outputs = np.array(outputs)
+    plt.plot(input_couplers * 100, outputs * 1e3, label=f'{int(P1 * 1e3)} mW', color=colors[idx])
 
-# Highlight the region between 12% and 13%
-plt.axvline(12, color='gray', linestyle='--', linewidth=1)
-plt.axvline(13, color='gray', linestyle='--', linewidth=1)
-plt.axvspan(12, 13, color='gray', alpha=0.2, label='12–13% Region')
+    max_index = np.argmax(outputs)
+    optimal_T1 = input_couplers[max_index]
+    optimal_T1_list.append(optimal_T1)
+
+    # Plot the max point as a dot
+    plt.plot(optimal_T1 * 100, outputs[max_index] * 1e3, 'o', color=colors[idx], markersize=6)
+
+# Highlight ±10% region around last optimal T1
+# optimal_T1_percent = optimal_T1_list[-1] * 100
+# lower_bound = optimal_T1_percent * 0.9
+# upper_bound = optimal_T1_percent * 1.1
+# plt.axvline(lower_bound, color='gray', linestyle='--', linewidth=1)
+# plt.axvline(upper_bound, color='gray', linestyle='--', linewidth=1)
+# plt.axvspan(lower_bound, upper_bound, color='gray', alpha=0.2,
+#             label=f'±10% around {optimal_T1_percent:.2f}%')
 
 plt.xlabel('Input Coupler Transmission (%)')
-plt.ylabel('SHG Output Power (arb. units)')
-plt.title('(a) SHG Output vs Input Coupler')
-plt.legend(loc='lower right', fontsize=15)
+plt.ylabel('Output Power (mW)')
+# plt.title('(a) SHG Output vs Input Coupler')
+plt.legend(loc='upper right', fontsize=12, framealpha=0.9)
 plt.grid(True)
 
-# Find the input coupler that gives maximum output at 800 mW
-outputs_800mW = max_outputs[-2]
-optimal_ic_index = np.argmax(outputs_800mW)
-optimal_ic = input_couplers[optimal_ic_index]
-
-# Plot (b): Output SHG vs input power for optimal input coupler
-input_powers_cont = np.linspace(0.01, 1.0, 300)
-outputs_b = [out_shg_sorensen(optimal_ic, loss, p, nonlinear_efficiency) for p in input_powers_cont]
-
-# Define a ±10% range around the optimal input coupler
-delta = 0.2
-T1_variations = np.linspace(start=optimal_ic * (1 - delta), stop=optimal_ic * (1 + delta), num=3)
-
+# Subplot (b): Output SHG vs input power for each optimal input coupler
 plt.subplot(1, 2, 2)
-for T1 in T1_variations:
-    outputs_b = [out_shg_sorensen(T1, loss, p, nonlinear_efficiency) for p in input_powers_cont]
-    plt.plot(input_powers_cont * 1000, outputs_b, label=f'T1 = {T1*100:.2f}%')
+input_powers_cont = np.linspace(start=0.01, stop=1.0, num=300)
+
+for idx, (P_fixed, T1_opt) in enumerate(zip(input_powers, optimal_T1_list)):
+    outputs_b = [out_shg_sorensen(T1_opt, loss, p, nonlinear_efficiency) for p in input_powers_cont]
+    plt.plot(input_powers_cont * 1000, [P2 * 1e3 for P2 in outputs_b], label=f'Opt @ {int(P_fixed * 1e3)} mW = {T1_opt*100:.2f}%', color=colors[idx])
 
 plt.xlabel('Input Power (mW)')
-plt.ylabel('SHG Output Power (arb. units)')
-plt.title(f'(b) SHG Output vs Input Power\n(±10% T1 around {optimal_ic*100:.2f}%)')
-plt.legend(fontsize=10)
+plt.ylabel('Output Power (mW)')
+# plt.title('(b) SHG Output vs Input Power')
 plt.grid(True)
+plt.legend(fontsize=12, framealpha=0.9)
 
 plt.tight_layout()
 plt.show()
