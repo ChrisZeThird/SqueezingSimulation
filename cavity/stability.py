@@ -9,20 +9,21 @@ from utils.settings import settings
 # Constants (example values in mm)
 L = settings.fixed_length
 R = settings.R
-d_curved = settings.fixed_d_curved
+d_curved = np.linspace(start=settings.d_curved_min, stop=settings.d_curved_max, num=settings.number_points)
 
 l_crystal_array = np.array([10, 15, 20, 25, 30]) * 1e-3
 
 # Compute stability for each l_crystal
-stability_values = []
 s_values = []
+dc = []
 
 for lc in l_crystal_array:
-    A1, B1, C1, D1 = ABCD_Matrix(L, d_curved, R, lc)
-    # s = (2 * A1 * D1 - 1) / 2
-    s = (2 * A1 * D1 - 1) / 2
-    s_values.append(s)
-    stability_values.append(-1 <= s <= 1)
+    stable_region, dc_stable = stability_condition(d_curved, L, R, lc, index_crystal=settings.crystal_index,
+                        wavelength=settings.wavelength)
+
+    s_values.append(stable_region)
+    dc.append(dc_stable)
+
 
 # Plotting
 plt.figure(figsize=(8, 5))

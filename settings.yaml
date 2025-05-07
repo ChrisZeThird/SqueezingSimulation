@@ -17,18 +17,18 @@ plug_value: False
 wavelength: 780e-9
 
 # Cavity parameters
-fixed_length: 600e-3
+fixed_length: 790e-3
 fixed_d_curved: 120e-3
 min_L: 200e-3
 max_L: 900e-3
 cavity_loss: 0.03
-d_curved_min: 10e-3
+d_curved_min: 100e-3
 d_curved_max: 300e-3
 
 # Transmission coefficients
 min_T: 0.
 max_T: 0.3
-R: 100e-3
+R: 150e-3
 R1: 10e-2  # for Kaertner plot
 R2: 11e-2  # for Kaertner plot
 

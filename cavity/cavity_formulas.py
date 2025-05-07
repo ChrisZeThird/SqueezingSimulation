@@ -1,6 +1,7 @@
 import numpy as np
 
 import cavity.finding_distances as fd
+from cavity.ray_matrix import bowtie_total_matrix
 from utils.settings import settings
 
 
@@ -86,16 +87,6 @@ def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=settings.crystal_index)
 
     return A1, B1, C1, D1
 
-    # MASADA
-    # E = -l_crystal/2 + (d_curved - l_crystal)/2 * index_crystal
-    # F = -2/R * E + index_crystal
-    #
-    # A = 1 - (L - d_curved) / R
-    # B = E + (L - d_curved)/2 * F
-    # C = -2/R
-    # D = F
-    # return A, B, C, D
-
 
 # -- Tamagawa / Svelto -- #
 def z_parameter(A1, B1, C1, D1):
@@ -111,6 +102,38 @@ def z_parameter(A1, B1, C1, D1):
     z2 = - (A1 * B1) / (C1 * D1)  # wavefront at mirror 2
 
     return z1, z2
+
+
+def stability_condition(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, wavelength=settings.wavelength):
+    """
+    Compute the stability condition.
+    First compute the waist
+    :param d_curved:
+    :param L:
+    :param R:
+    :param l_crystal:
+    :param index_crystal:
+    :param wavelength:
+    :return:
+    """
+    # TODO Use the waist function to avoid repetition in the code or something...
+    A1, B1, C1, D1 = ABCD_Matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
+    # A1, B1, C1, D1 = bowtie_total_matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
+
+    z1, z2 = z_parameter(A1, B1, C1, D1)
+    temp1 = np.full(shape=z1.shape, fill_value=np.nan, dtype=np.float32)
+    valid_indices_1 = np.where(z1 >= 0)  # ensures the square root is taken for positive terms only
+    temp1[valid_indices_1] = np.sqrt(z1[valid_indices_1])
+    w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * temp1)  # the first waist is in the crystal of index n1
+
+    max_waist = np.max(w1[valid_indices_1])
+    max_index = np.argmax(w1[valid_indices_1])
+    print(max_index)
+
+    dc_stable = d_curved[max_index]
+    s = 2 * A1[max_index] * D1[max_index] - 1
+
+    return s, dc_stable
 
 
 def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, wavelength=settings.wavelength):
@@ -143,53 +166,3 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
     valid_indices = (valid_indices_1, valid_indices_1)
 
     return z1, z2, w1, w2, valid_indices
-
-
-# -- Kaertner classnotes -- #
-def waist_mirror1(R1, R2, L, wavelength):
-    return (((wavelength * R1) / np.pi) ** 2 * ((R2 - L) / (R1 - L)) * (L / (R1 + R2 - L))) ** (1 / 4)
-
-
-def waist_mirror3(R1, R2, L, wavelength):
-    return (((wavelength * R2) / np.pi) ** 2 * ((R1 - L) / (R2 - L)) * (L / (R1 + R2 - L))) ** (1 / 4)
-
-
-def waist_intracavity(R1, R2, L, wavelength):
-    return ((wavelength / np.pi) ** 2 * (L * (R1 - L) * (R2 - L) * (R1 + R2 - L) / ((R1 + R2 - 2 * L) ** 2))) ** (1 / 4)
-
-
-# -- Laurat / Boyd -- #
-def effective_length(L, l, refractive_index):
-    """
-    Calculates the effective length of a cavity with a non-linear crystal of length l and index n
-    :param L:
-    :param l:
-    :param refractive_index:
-    :return:
-    """
-    return L - l * (1 - 1/refractive_index)
-
-
-def effective_Rayleigh_length(L, l, refractive_index, R):
-    """
-    New Rayleigh length for OPO
-    :param L:
-    :param l:
-    :param refractive_index:
-    :param R:
-    :return:
-    """
-    eff_length = effective_length(L, l, refractive_index)
-    return np.sqrt(eff_length * (R - eff_length))
-
-
-def stability_condition(A, D):
-    """
-    Compute the stability condition for a symmetrical cavity
-    :param A:
-    :param D:
-    :return:
-    """
-    s = (A+D) / 2
-    # check where -1 < (A+D)/2 < 1
-    return np.logical_and(s > -1, s < 1)
