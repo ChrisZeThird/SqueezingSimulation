@@ -1,7 +1,6 @@
 import numpy as np
 
 import cavity.finding_distances as fd
-from cavity.ray_matrix import bowtie_total_matrix
 from utils.settings import settings
 
 
@@ -154,17 +153,10 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
     temp1[valid_indices_1] = np.sqrt(z1[valid_indices_1])
     w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * temp1)  # the first waist is in the crystal of index n1
 
-    print(2 * A1[valid_indices_1] * D1[valid_indices_1] - 1)
-
-    max_waist = np.max(w1[valid_indices_1])
-    # print(max_waist*1e6)
-
     temp2 = np.full(shape=z2.shape, fill_value=np.nan, dtype=np.float32)
     valid_indices_2 = np.where(z2 >= 0)  # ensures the square root is taken for positive terms only
     temp2[valid_indices_2] = np.sqrt(z2[valid_indices_2])
     w2 = np.sqrt((wavelength / np.pi) * temp2)   # the second waist is in the air so n=1
-
-    # w2 = index_crystal * w1 / np.sqrt((C1*temp1)**2 + D1**2)
 
     valid_indices = (valid_indices_1, valid_indices_1)
 

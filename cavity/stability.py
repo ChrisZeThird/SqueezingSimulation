@@ -79,7 +79,7 @@ param_legend = ax.legend(
     handles=[L_line, R_line, wavelength_line],
     labels=[f'L = {L} m', f'R = {R} m', f'Wavelength = {settings.wavelength * 1e9} nm'],
     loc='center left',
-    bbox_to_anchor=(1, 0.1),
+    bbox_to_anchor=(1, 0.15),
     handlelength=0,  # Set handlelength to 0 to prevent invisible lines from showing up
     title='Used Parameters',  # Add a small title to the legend
     title_fontsize='medium',  # Set the font size for the title (optional)
