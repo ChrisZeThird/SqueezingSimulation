@@ -118,22 +118,19 @@ def stability_condition(d_curved, L, R, l_crystal, index_crystal=settings.crysta
     """
     # TODO Use the waist function to avoid repetition in the code or something...
     A1, B1, C1, D1 = ABCD_Matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
-    # A1, B1, C1, D1 = bowtie_total_matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
+    z1, _ = z_parameter(A1, B1, C1, D1)
+    s = 2 * A1 * D1 - 1
 
-    z1, z2 = z_parameter(A1, B1, C1, D1)
-    temp1 = np.full(shape=z1.shape, fill_value=np.nan, dtype=np.float32)
-    valid_indices_1 = np.where(z1 >= 0)  # ensures the square root is taken for positive terms only
-    temp1[valid_indices_1] = np.sqrt(z1[valid_indices_1])
-    w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * temp1)  # the first waist is in the crystal of index n1
+    # Beam waist w1 = sqrt((λ / (n π)) * sqrt(z1)) -- only for valid z1
+    temp = np.full_like(z1, np.nan, dtype=np.float64)
+    valid_z = z1 >= 0
+    temp[valid_z] = np.sqrt(z1[valid_z])
+    w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * temp)
 
-    max_waist = np.max(w1[valid_indices_1])
-    max_index = np.argmax(w1[valid_indices_1])
-    print(max_index)
+    # Final filter: valid z and stability
+    valid = np.logical_and(valid_z, np.abs(s) < 1)
 
-    dc_stable = d_curved[max_index]
-    s = 2 * A1[max_index] * D1[max_index] - 1
-
-    return s, dc_stable
+    return d_curved[valid], s[valid], w1[valid]
 
 
 def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, wavelength=settings.wavelength):
@@ -149,12 +146,18 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
     :return: Tuple (w1, w2, valid_indices)
     """
     A1, B1, C1, D1 = ABCD_Matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
+
     z1, z2 = z_parameter(A1, B1, C1, D1)
 
     temp1 = np.full(shape=z1.shape, fill_value=np.nan, dtype=np.float32)
     valid_indices_1 = np.where(z1 >= 0)  # ensures the square root is taken for positive terms only
     temp1[valid_indices_1] = np.sqrt(z1[valid_indices_1])
     w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * temp1)  # the first waist is in the crystal of index n1
+
+    print(2 * A1[valid_indices_1] * D1[valid_indices_1] - 1)
+
+    max_waist = np.max(w1[valid_indices_1])
+    # print(max_waist*1e6)
 
     temp2 = np.full(shape=z2.shape, fill_value=np.nan, dtype=np.float32)
     valid_indices_2 = np.where(z2 >= 0)  # ensures the square root is taken for positive terms only
