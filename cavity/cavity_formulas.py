@@ -80,9 +80,10 @@ def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=settings.crystal_index)
     :return: Tuple (A1, B1, C1, D1)
     """
     A1 = 1 - (L - d_curved) / R
-    B1 = ((L - d_curved) / 2 + ((d_curved - l_crystal) / 2) * (1 - (L - d_curved) / R)) / index_crystal + l_crystal * (1 - (L - d_curved) / R) / 2
+    B1 = index_crystal * ((L - d_curved) / 2 + ((d_curved - l_crystal) / 2) * (1 - (L - d_curved) / R)) + l_crystal * (1 - (L - d_curved) / R) / 2
     C1 = - 2 / R
-    D1 = (1 - (d_curved - l_crystal) / R) / index_crystal - l_crystal / R
+    D1 = (1 - (d_curved - l_crystal) / R) * index_crystal - l_crystal / R
+
     return A1, B1, C1, D1
 
     # MASADA

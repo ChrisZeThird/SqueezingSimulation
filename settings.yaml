@@ -17,7 +17,7 @@ plug_value: False
 wavelength: 780e-9
 
 # Cavity parameters
-fixed_length: 500e-3
+fixed_length: 600e-3
 fixed_d_curved: 120e-3
 min_L: 200e-3
 max_L: 900e-3
@@ -28,7 +28,7 @@ d_curved_max: 300e-3
 # Transmission coefficients
 min_T: 0.
 max_T: 0.3
-R: 50e-3
+R: 100e-3
 R1: 10e-2  # for Kaertner plot
 R2: 11e-2  # for Kaertner plot
 
@@ -37,7 +37,7 @@ central_freq: 10.0e6
 range_freq: 0.1
 
 # Crystal parameters
-crystal_length: 10e-3
+crystal_length: 20e-3
 crystal_index: 1.84  # PPKTP refraction index
 
 # Squeezing parameters
