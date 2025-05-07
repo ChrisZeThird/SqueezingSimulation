@@ -103,30 +103,28 @@ def z_parameter(A1, B1, C1, D1):
     return z1, z2
 
 
+def compute_waist(z, wavelength, index):
+    """
+    Compute beam waist from the z-parameter, wavelength and index of refraction.
+    Returns waist and valid indices where z >= 0.
+    """
+    temp = np.full_like(z, np.nan, dtype=np.float64)
+    valid = z >= 0
+    temp[valid] = np.sqrt(z[valid])
+    waist = np.sqrt((wavelength / (index * np.pi)) * temp)
+    return waist, valid
+
+
 def stability_condition(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, wavelength=settings.wavelength):
     """
     Compute the stability condition.
-    First compute the waist
-    :param d_curved:
-    :param L:
-    :param R:
-    :param l_crystal:
-    :param index_crystal:
-    :param wavelength:
-    :return:
+    :return: (valid_d_curved, stability_value_s, waist_in_crystal)
     """
-    # TODO Use the waist function to avoid repetition in the code or something...
     A1, B1, C1, D1 = ABCD_Matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
     z1, _ = z_parameter(A1, B1, C1, D1)
     s = 2 * A1 * D1 - 1
 
-    # Beam waist w1 = sqrt((λ / (n π)) * sqrt(z1)) -- only for valid z1
-    temp = np.full_like(z1, np.nan, dtype=np.float64)
-    valid_z = z1 >= 0
-    temp[valid_z] = np.sqrt(z1[valid_z])
-    w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * temp)
-
-    # Final filter: valid z and stability
+    w1, valid_z = compute_waist(z1, wavelength, index_crystal)
     valid = np.logical_and(valid_z, np.abs(s) < 1)
 
     return d_curved[valid], s[valid], w1[valid]
@@ -134,30 +132,13 @@ def stability_condition(d_curved, L, R, l_crystal, index_crystal=settings.crysta
 
 def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, wavelength=settings.wavelength):
     """
-    Calculates the beam waist size in radius at the center of the nonlinear optical crystal and the intermediate
-    between flat mirrors
-    :param d_curved: Distance between curved mirrors
-    :param L: Cavity length
-    :param R: Radii of curvature of curved mirror
-    :param l_crystal: Length of non-linear crystal
-    :param index_crystal: Index of refraction of non-linear medium (by default 1)
-    :param wavelength:
-    :return: Tuple (w1, w2, valid_indices)
+    Calculates the beam waist sizes in the crystal and in air.
+    :return: Tuple (z1, z2, w1, w2, valid_indices)
     """
     A1, B1, C1, D1 = ABCD_Matrix(L=L, d_curved=d_curved, R=R, l_crystal=l_crystal, index_crystal=index_crystal)
-
     z1, z2 = z_parameter(A1, B1, C1, D1)
 
-    temp1 = np.full(shape=z1.shape, fill_value=np.nan, dtype=np.float32)
-    valid_indices_1 = np.where(z1 >= 0)  # ensures the square root is taken for positive terms only
-    temp1[valid_indices_1] = np.sqrt(z1[valid_indices_1])
-    w1 = np.sqrt((wavelength / (index_crystal * np.pi)) * temp1)  # the first waist is in the crystal of index n1
+    w1, valid_z1 = compute_waist(z1, wavelength, index_crystal)
+    w2, valid_z2 = compute_waist(z2, wavelength, 1.0)
 
-    temp2 = np.full(shape=z2.shape, fill_value=np.nan, dtype=np.float32)
-    valid_indices_2 = np.where(z2 >= 0)  # ensures the square root is taken for positive terms only
-    temp2[valid_indices_2] = np.sqrt(z2[valid_indices_2])
-    w2 = np.sqrt((wavelength / np.pi) * temp2)   # the second waist is in the air so n=1
-
-    valid_indices = (valid_indices_1, valid_indices_1)
-
-    return z1, z2, w1, w2, valid_indices
+    return z1, z2, w1, w2, (valid_z1, valid_z2)
