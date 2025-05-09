@@ -1,5 +1,6 @@
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import matplotlib.cm as cm
 from matplotlib.lines import Line2D
 
@@ -267,6 +268,93 @@ def angle_evolution(L, dc):
     plt.gca().add_artist(text_box)
     # plt.legend(title="Wavelength")
     plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_max_waist_vs_all():
+    parameters = {
+        'L': {
+            'label': 'Cavity length $L$ (mm)',
+            'sweep': np.linspace(start=200, stop=800, num=300) * 1e-3,
+            'unit_scale': 1e3  # Convert from m to mm
+        },
+        'lc': {
+            'label': 'Crystal length $l_c$ (mm)',
+            'sweep': np.linspace(start=10, stop=30, num=100) * 1e-3,
+            'unit_scale': 1e3
+        },
+        'R': {
+            'label': 'Mirror curvature $R$ (mm)',
+            'sweep': np.linspace(start=50, stop=150, num=100) * 1e-3,
+            'unit_scale': 1e3
+        }
+    }
+
+    # Use GridSpec for custom subplot layout
+    fig = plt.figure(figsize=(18, 10))
+    gs = gridspec.GridSpec(4, 4)
+
+    axes = [
+        fig.add_subplot(gs[:2, :2]),  # Top left
+        fig.add_subplot(gs[:2, 2:]),  # Top right
+        fig.add_subplot(gs[2:, 1:3])  # Bottom center
+    ]
+
+    for i, (param, info) in enumerate(parameters.items()):
+        sweep_array = info['sweep']
+        unit_scale = info['unit_scale']
+        label = info['label']
+
+        max_waists = []
+        optimal_dc = []
+
+        for val in sweep_array:
+            d_curved_array = np.linspace(settings.d_curved_min, settings.d_curved_max, 200)
+
+            kwargs = {
+                'L': settings.fixed_length,
+                'R': settings.R,
+                'l_crystal': settings.crystal_length,
+                'd_curved': d_curved_array,
+                'index_crystal': settings.crystal_index,
+                'wavelength': settings.wavelength,
+            }
+
+            if param == 'L':
+                kwargs['L'] = val
+            elif param == 'lc':
+                kwargs['l_crystal'] = val
+            elif param == 'R':
+                kwargs['R'] = val
+
+            _, _, w1, _, (valid_z1, _) = cf.Beam_waist(**kwargs)
+            valid_dc = d_curved_array[valid_z1]
+            valid_w1 = w1[valid_z1]
+
+            if valid_w1.size > 0:
+                idx_max = np.argmax(valid_w1)
+                max_waists.append(valid_w1[idx_max])
+                optimal_dc.append(valid_dc[idx_max])
+            else:
+                max_waists.append(np.nan)
+                optimal_dc.append(np.nan)
+
+        ax1 = axes[i]
+        ax2 = ax1.twinx()
+
+        ax1.plot(sweep_array * unit_scale, [w * 1e6 for w in max_waists], color='tab:red', label='Max waist')
+        ax1.set_xlabel(label)
+        ax1.set_ylabel('Max beam waist $w_1$ (um)', color='tab:red')
+        ax1.tick_params(axis='y', labelcolor='tab:red')
+
+        ax2.plot(sweep_array * unit_scale, optimal_dc, color='tab:blue', linestyle='--', label='Optimal $d_c$')
+        ax2.set_ylabel('Optimal $d_c$ (mm)', color='tab:blue')
+        ax2.tick_params(axis='y', labelcolor='tab:blue')
+
+        ax1.set_title(f'Max Waist and Optimal $d_c$ vs {param}')
+        ax1.grid(True)
+
     plt.tight_layout()
     plt.show()
 
