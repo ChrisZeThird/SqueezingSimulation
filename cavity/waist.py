@@ -343,13 +343,23 @@ def plot_max_waist_vs_all():
         ax1 = axes[i]
         ax2 = ax1.twinx()
 
+        # Waist plot
         ax1.plot(sweep_array * unit_scale, [w * 1e6 for w in max_waists], color='tab:red', label='Max waist')
         ax1.set_xlabel(label)
-        ax1.set_ylabel('Max beam waist $w_1$ (um)', color='tab:red')
+        # ax1.set_ylabel('Max beam waist $w_1$ (um)', color='tab:red')
+        if i != 1:  # Show only on first subplot (hide for second)
+            ax1.set_ylabel('Max beam waist $w_1$ (µm)', color='tab:red')
+        else:
+            ax1.set_ylabel('')
         ax1.tick_params(axis='y', labelcolor='tab:red')
 
+        # Optimal d_curved plot
         ax2.plot(sweep_array * unit_scale, optimal_dc, color='tab:blue', linestyle='--', label='Optimal $d_c$')
-        ax2.set_ylabel('Optimal $d_c$ (mm)', color='tab:blue')
+        # ax2.set_ylabel('Optimal $d_c$ (mm)', color='tab:blue')
+        if i != 0:  # Show only on second subplot (hide for first)
+            ax2.set_ylabel('Optimal $d_c$ (mm)', color='tab:blue')
+        else:
+            ax2.set_ylabel('')
         ax2.tick_params(axis='y', labelcolor='tab:blue')
 
         ax1.set_title(f'Max Waist and Optimal $d_c$ vs {param}')
@@ -374,7 +384,7 @@ def plot_max_waist_vs_all():
             fixed_params_text += r"$\lambda = {}$ nm".format(settings.wavelength * 1e9)
             x, y = 0.7, 0.3
 
-        ax1.text(x, y, fixed_params_text, transform=ax1.transAxes, fontsize=10,
+        ax1.text(x, y, fixed_params_text, transform=ax1.transAxes, fontsize=12,
                  verticalalignment='top', horizontalalignment='left', color='black',
                  bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', boxstyle='round,pad=0.5'))
 

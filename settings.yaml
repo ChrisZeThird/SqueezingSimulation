@@ -17,7 +17,7 @@ plug_value: False
 wavelength: 780e-9
 
 # Cavity parameters
-fixed_length: 800e-3
+fixed_length: 700e-3
 fixed_d_curved: 190e-3
 min_L: 200e-3
 max_L: 900e-3
@@ -35,7 +35,7 @@ central_freq: 10.0e6
 range_freq: 0.1
 
 # Crystal parameters
-crystal_length: 10e-3
+crystal_length: 20e-3
 crystal_index: 1.84  # PPKTP refraction index
 
 # Squeezing parameters
