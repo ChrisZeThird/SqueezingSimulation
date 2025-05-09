@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D  # For creating proxy artists
 
-from cavity.cavity_formulas import ABCD_Matrix, stability_condition
+from cavity.cavity_formulas import stability_condition
 from utils.settings import settings
 import utils.plot_parameters
 
@@ -80,7 +80,7 @@ param_legend = ax.legend(
     labels=[f'L = {L} m', f'R = {R} m', f'Wavelength = {settings.wavelength * 1e9} nm'],
     loc='center left',
     bbox_to_anchor=(1, 0.15),
-    handlelength=0,  # Set handlelength to 0 to prevent invisible lines from showing up
+    handlelength=0,  # Set handle length to 0 to prevent invisible lines from showing up
     title='Used Parameters',  # Add a small title to the legend
     title_fontsize='medium',  # Set the font size for the title (optional)
 )

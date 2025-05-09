@@ -17,25 +17,25 @@ plug_value: False
 wavelength: 780e-9
 
 # Cavity parameters
-fixed_length: 500e-3
+fixed_length: 790e-3
 fixed_d_curved: 190e-3
 min_L: 200e-3
 max_L: 900e-3
 cavity_loss: 0.03
-d_curved_min: 50e-3
-d_curved_max: 200e-3
+d_curved_min: 90e-3
+d_curved_max: 300e-3
 
 # Transmission coefficients
 min_T: 0.
 max_T: 0.3
-R: 50e-3
+R: 150e-3
 
 # Bandwidth
 central_freq: 10.0e6
 range_freq: 0.1
 
 # Crystal parameters
-crystal_length: 10e-3
+crystal_length: 20e-3
 crystal_index: 1.84  # PPKTP refraction index
 
 # Squeezing parameters

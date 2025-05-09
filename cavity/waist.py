@@ -40,7 +40,7 @@ def waist():
         if plot_vs == 'dc':
             sweep_array = np.linspace(start=settings.d_curved_min, stop=settings.d_curved_max,
                                       num=settings.number_points)
-
+            
             kwargs['d_curved'] = sweep_array
             xlabel = r'Distance $d_{c}$ (mm)'
 
@@ -86,7 +86,6 @@ def waist():
         else:
             raise ValueError(f"Invalid plot_vs value '{plot_vs}'. Choose from 'dc', 'L', 'R', or 'lc'.")
 
-        # print(kwargs)
         z1, z2, w1, w2, valid_indices = cf.Beam_waist(**kwargs)
 
         if valid_indices[0][0].size == 0 or valid_indices[1][0].size == 0:

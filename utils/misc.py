@@ -63,3 +63,11 @@ def arrays_to_tuples_list(arr1, arr2):
 
 def convert_np_to_string(arr):
     return np.char.mod('%d', arr)
+
+
+# Recursive definition of factorial
+def factorial(n):
+    if n < 2:
+        return 1
+    else:
+        return n * factorial(n-1)
