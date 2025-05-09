@@ -355,6 +355,29 @@ def plot_max_waist_vs_all():
         ax1.set_title(f'Max Waist and Optimal $d_c$ vs {param}')
         ax1.grid(True)
 
+        # Add text box with fixed parameters information
+        fixed_params_text = f"Fixed parameters:\n"
+        x, y = 0.7, 0.85
+        if param == 'L':
+            fixed_params_text += r"$R = {}$ mm".format(settings.R * 1e3) + "\n"
+            fixed_params_text += r"$l_c = {}$ mm".format(settings.crystal_length * 1e3) + "\n"
+            fixed_params_text += r"$\lambda = {}$ nm".format(settings.wavelength * 1e9)
+            x, y = 0.7, 0.85
+        elif param == 'lc':
+            fixed_params_text += r"$R = {}$ mm".format(settings.R * 1e3) + "\n"
+            fixed_params_text += r"$L = {}$ mm".format(settings.fixed_length * 1e3) + "\n"
+            fixed_params_text += r"$\lambda = {}$ nm".format(settings.wavelength * 1e9)
+            x, y = 0.7, 0.3
+        elif param == 'R':
+            fixed_params_text += r"$L = {}$ mm".format(settings.fixed_length * 1e3) + "\n"
+            fixed_params_text += r"$l_c = {}$ mm".format(settings.crystal_length * 1e3) + "\n"
+            fixed_params_text += r"$\lambda = {}$ nm".format(settings.wavelength * 1e9)
+            x, y = 0.7, 0.3
+
+        ax1.text(x, y, fixed_params_text, transform=ax1.transAxes, fontsize=10,
+                 verticalalignment='top', horizontalalignment='left', color='black',
+                 bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', boxstyle='round,pad=0.5'))
+
     plt.tight_layout()
     plt.show()
 
