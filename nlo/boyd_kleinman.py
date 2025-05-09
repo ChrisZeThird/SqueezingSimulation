@@ -1,65 +1,37 @@
 import numpy as np
+from scipy.integrate import quad
 import matplotlib.pyplot as plt
 
-from utils.misc import factorial
+
+def integrand1(t, kappa):
+    return np.exp(-kappa * t) / (1 + t**2)
 
 
-def S(N, kappa, xi):
-    """
-    Computes the integral term int_0^xi exp(-kappa tau)/(1+tau^2) dt
-    :param N: order of the series expansion
-    :param kappa: the absorption coefficient as defined in BK
-    :param xi: focusing parameter as defined in BK
-    :return:
-    """
-    s_n = 0
-    for n in range(N):
-        fac_n = factorial(n)
-        a_n = ((-1) ** n) * (2 * fac_n)
-
-        s_p = 0
-        for p in range(2*n+1):
-            fac_p = factorial(p)
-            common_factor = np.exp(-kappa * xi) + (-1)**(p + 1) * np.exp(kappa * xi)
-            s_p += common_factor * (xi ** p) / (fac_p * (kappa ** (2 * n + 1 - p)))
-
-        temp = a_n * (s_p + 2/((2 * n + 1) * kappa ** (2 * n + 2)))
-        s_n += temp
-
-    return s_n
+def integrand2(t, kappa):
+    return (np.exp(-kappa * t) / (1 + t**2)) * t
 
 
-def h(kappa, xi, N):
-    """
-    Boyd-Kleinman function h
-    :param kappa:
-    :param xi:
-    :param N:
-    :return:
-    """
-    s_n = S(N, kappa, xi)
-    return 1/(2 * xi) * (s_n ** 2)
+def compute_integral(integrand, kappa, xi):
+    result, error = quad(integrand, -xi, xi, args=(kappa,))
+    return result
 
 
 # Parameters
-xi_vals = np.linspace(0.1, 100, 300)
-kappa_vals = [0]
-N_vals = [20, 50, 80]
+kappa = 0.
+xi_vals = np.linspace(start=0.1, stop=100, num=1000)
 
-plt.figure(figsize=(12, 8))
+# Compute I and h for each xi
+I_vals_1 = np.array([compute_integral(integrand1, kappa, xi) for xi in xi_vals])
+I_vals_2 = np.array([compute_integral(integrand2, kappa, xi) for xi in xi_vals])
+h_vals = (1 / (4 * xi_vals)) * (I_vals_1 ** 2 + I_vals_2 ** 2)
 
-for kappa in kappa_vals:
-    for N in N_vals:
-        h_vals = [h(kappa, xi, N) for xi in xi_vals]
-        plt.plot(xi_vals, h_vals, label=f"kappa={kappa}, N={N}")
+h_exact = (1 / xi_vals) * np.arctan(xi_vals)**2
 
-plt.title("Boyd-Kleinman function h(xi) for different kappa and N")
-plt.xlabel("xi (focusing parameter)")
-plt.ylabel("h(kappa, xi, N)")
+plt.plot(xi_vals, h_vals, label=f'Numerical h(κ=0)')
+plt.plot(xi_vals, h_exact, '--', label='Exact h(κ=0) = arctan²(ξ)/ξ')
+plt.xlabel('ξ')
+plt.ylabel('h(κ, ξ)')
+plt.title('Comparison of Numerical and Exact h(κ=0, ξ)')
 plt.grid(True)
 plt.legend()
-plt.tight_layout()
 plt.show()
-
-
-
