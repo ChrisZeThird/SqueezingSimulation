@@ -192,7 +192,7 @@ def plot_w1_w2_vs_L(filename="waist_log.csv", wavelength_nm=780.0):
     unique_Rs = sorted(df_filtered["R_mm"].unique())
     colors = cm.viridis(np.linspace(0, 1, len(unique_Rs)))
 
-    fig, ax = plt.subplots(figsize=(16, 9))
+    fig, ax = plt.subplots(figsize=(18, 9))
 
     for color, R in zip(colors, unique_Rs):
         df_R = df_filtered[df_filtered["R_mm"] == R].sort_values("L_mm")
@@ -273,35 +273,7 @@ def angle_evolution(L, dc):
 
 
 def plot_max_waist_vs_all():
-    parameters = {
-        'L': {
-            'label': 'Cavity length $L$ (mm)',
-            'sweep': np.linspace(start=200, stop=800, num=300) * 1e-3,
-            'unit_scale': 1e3  # Convert from m to mm
-        },
-        'lc': {
-            'label': 'Crystal length $l_c$ (mm)',
-            'sweep': np.linspace(start=10, stop=30, num=100) * 1e-3,
-            'unit_scale': 1e3
-        },
-        'R': {
-            'label': 'Mirror curvature $R$ (mm)',
-            'sweep': np.linspace(start=50, stop=150, num=100) * 1e-3,
-            'unit_scale': 1e3
-        }
-    }
-
-    # Use GridSpec for custom subplot layout
-    fig = plt.figure(figsize=(18, 10))
-    gs = gridspec.GridSpec(4, 4)
-
-    axes = [
-        fig.add_subplot(gs[:2, :2]),  # Top left
-        fig.add_subplot(gs[:2, 2:]),  # Top right
-        fig.add_subplot(gs[2:, 1:3])  # Bottom center
-    ]
-
-    for i, (param, info) in enumerate(parameters.items()):
+    def compute_and_plot(ax1, ax2, param, info, waist_index=2):
         sweep_array = info['sweep']
         unit_scale = info['unit_scale']
         label = info['label']
@@ -328,35 +300,31 @@ def plot_max_waist_vs_all():
             elif param == 'R':
                 kwargs['R'] = val
 
-            _, _, w1, _, (valid_z1, _) = cf.Beam_waist(**kwargs)
+            _, _, w1, w2, (valid_z1, _) = cf.Beam_waist(**kwargs)
             valid_dc = d_curved_array[valid_z1]
-            valid_w1 = w1[valid_z1]
+            selected_waist = w1 if waist_index == 1 else w2
+            valid_waist = selected_waist[valid_z1]
 
-            if valid_w1.size > 0:
-                idx_max = np.argmax(valid_w1)
-                max_waists.append(valid_w1[idx_max])
+            if valid_waist.size > 0:
+                idx_max = np.argmax(valid_waist)
+                max_waists.append(valid_waist[idx_max])
                 optimal_dc.append(valid_dc[idx_max])
             else:
                 max_waists.append(np.nan)
                 optimal_dc.append(np.nan)
 
-        ax1 = axes[i]
-        ax2 = ax1.twinx()
-
         # Waist plot
-        ax1.plot(sweep_array * unit_scale, [w * 1e6 for w in max_waists], color='tab:red', label='Max waist')
+        ax1.plot(sweep_array * unit_scale, [w * 1e6 for w in max_waists], color='tab:red')
         ax1.set_xlabel(label)
-        # ax1.set_ylabel('Max beam waist $w_1$ (um)', color='tab:red')
-        if i != 1:  # Show only on first subplot (hide for second)
-            ax1.set_ylabel('Max beam waist $w_1$ (µm)', color='tab:red')
+        if i != 1:
+            ax1.set_ylabel(f'Max beam waist $w_{"1" if waist_index == 1 else "2"}$ (µm)', color='tab:red')
         else:
             ax1.set_ylabel('')
         ax1.tick_params(axis='y', labelcolor='tab:red')
 
         # Optimal d_curved plot
-        ax2.plot(sweep_array * unit_scale, optimal_dc, color='tab:blue', linestyle='--', label='Optimal $d_c$')
-        # ax2.set_ylabel('Optimal $d_c$ (mm)', color='tab:blue')
-        if i != 0:  # Show only on second subplot (hide for first)
+        ax2.plot(sweep_array * unit_scale, optimal_dc, color='tab:blue', linestyle='--')
+        if i != 0:
             ax2.set_ylabel('Optimal $d_c$ (mm)', color='tab:blue')
         else:
             ax2.set_ylabel('')
@@ -365,29 +333,64 @@ def plot_max_waist_vs_all():
         ax1.set_title(f'Max Waist and Optimal $d_c$ vs {param}')
         ax1.grid(True)
 
-        # Add text box with fixed parameters information
-        fixed_params_text = f"Fixed parameters:\n"
+        # Add fixed parameter box
+        fixed_params_text = "Fixed parameters:\n"
         x, y = 0.7, 0.85
         if param == 'L':
             fixed_params_text += r"$R = {}$ mm".format(settings.R * 1e3) + "\n"
             fixed_params_text += r"$l_c = {}$ mm".format(settings.crystal_length * 1e3) + "\n"
             fixed_params_text += r"$\lambda = {}$ nm".format(settings.wavelength * 1e9)
-            x, y = 0.7, 0.85
         elif param == 'lc':
             fixed_params_text += r"$R = {}$ mm".format(settings.R * 1e3) + "\n"
             fixed_params_text += r"$L = {}$ mm".format(settings.fixed_length * 1e3) + "\n"
             fixed_params_text += r"$\lambda = {}$ nm".format(settings.wavelength * 1e9)
-            x, y = 0.7, 0.3
+            y = 0.3
         elif param == 'R':
             fixed_params_text += r"$L = {}$ mm".format(settings.fixed_length * 1e3) + "\n"
             fixed_params_text += r"$l_c = {}$ mm".format(settings.crystal_length * 1e3) + "\n"
             fixed_params_text += r"$\lambda = {}$ nm".format(settings.wavelength * 1e9)
-            x, y = 0.7, 0.3
+            y = 0.3
 
         ax1.text(x, y, fixed_params_text, transform=ax1.transAxes, fontsize=12,
                  verticalalignment='top', horizontalalignment='left', color='black',
                  bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', boxstyle='round,pad=0.5'))
 
-    plt.tight_layout()
-    plt.show()
+    # Settings
+    parameters = {
+        'L': {
+            'label': 'Cavity length $L$ (mm)',
+            'sweep': np.linspace(200, 800, 300) * 1e-3,
+            'unit_scale': 1e3
+        },
+        'lc': {
+            'label': 'Crystal length $l_c$ (mm)',
+            'sweep': np.linspace(10, 30, 100, endpoint=True) * 1e-3,
+            'unit_scale': 1e3
+        },
+        'R': {
+            'label': 'Mirror curvature $R$ (mm)',
+            'sweep': np.linspace(50, 150, 100, endpoint=True) * 1e-3,
+            'unit_scale': 1e3
+        }
+    }
 
+    for waist_index in [1, 2]:
+        fig = plt.figure(figsize=(18, 10))
+        gs = gridspec.GridSpec(4, 4)
+        axes = [
+            fig.add_subplot(gs[:2, :2]),
+            fig.add_subplot(gs[:2, 2:]),
+            fig.add_subplot(gs[2:, 1:3])
+        ]
+
+        for i, (param, info) in enumerate(parameters.items()):
+            ax1 = axes[i]
+            ax2 = ax1.twinx()
+            compute_and_plot(ax1, ax2, param, info, waist_index=waist_index)
+
+        fig.suptitle(f'Waist Analysis', fontsize=22)
+        plt.tight_layout()
+        plt.subplots_adjust(top=0.92)
+        plt.show()
+
+        break

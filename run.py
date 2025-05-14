@@ -27,9 +27,7 @@ if __name__ == '__main__':
     if settings.plot_waist:
         # waist()
         plot_max_waist_vs_all()
-        # plot_from_csv()
         # angle_evolution(L=550e-3, dc=124e-3)
-        # plot_w1_w2_vs_L(wavelength_nm=780.0)
 
     if settings.plug_value:
         L = settings.fixed_length
