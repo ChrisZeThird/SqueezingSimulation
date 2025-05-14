@@ -104,13 +104,21 @@ for author in authors:
     index_ref2 = n_z(wavelength_ref_opo * 2)
     index_ratio = index_780 / index_ref2
 
-    power_ratio = safe_divide(input_power, opo.get("input_power_mW"))
-    coupler_ratio = safe_divide(output_coupler, opo.get("T_output_coupler"))
-    crystal_ratio = safe_divide(length_crystal, opo.get("crystal_length_mm"))
-    round_trip_ratio = safe_divide(round_trip, opo.get("cavity_length_mm"))
-    roc_ratio = safe_divide(roc, opo.get("roc1_mm"))
+    # Extract parameters for the legend
+    wavelength_ref_opo = opo["input_wavelength_nm"] * 1e-3
+    input_power_mW = opo.get("input_power_mW")
+    crystal_length_mm = opo.get("crystal_length_mm")
+    T_output_coupler = opo.get("T_output_coupler")
+    cavity_length_mm = opo.get("cavity_length_mm")
+    roc1_mm = opo.get("roc1_mm")
 
-    S = opo["squeezing_dB"]
+    power_ratio = safe_divide(input_power, input_power_mW)
+    coupler_ratio = safe_divide(output_coupler, T_output_coupler)
+    crystal_ratio = safe_divide(length_crystal, crystal_length_mm)
+    round_trip_ratio = safe_divide(round_trip, cavity_length_mm)
+    roc_ratio = safe_divide(roc, roc1_mm)
+
+    S = 10 ** (opo["squeezing_dB"] / 10)  # sq (dB) = 10 log10 ( ) => S = 10^( sq (dB) / 10 )
     expected_squeezing_power = safe_multiply(S, index_ratio, power_ratio)
     expected_squeezing_crystal = safe_multiply(S, index_ratio, crystal_ratio)
     expected_squeezing_coupler = safe_multiply(S, index_ratio, coupler_ratio)
@@ -122,9 +130,19 @@ for author in authors:
     line_coupler, = axes[2].plot(output_coupler, expected_squeezing_coupler, label=author, color=color)
     line_roc, = axes[3].plot(roc, expected_squeezing_roc, '-s', label=author, color=color)
 
+    legend_label = (
+        fr"$\mathbf{{{author}}}$: " + "\n"
+        fr"$\lambda={wavelength_ref_opo:.3f}~\mu\text{{m}}$ " + "\n"
+        fr"$P={input_power_mW}~\text{{mW}}$" + "\n"
+        fr"$l_c={crystal_length_mm}~\text{{mm}}$" + "\n"
+        fr"$T={T_output_coupler}$" + "\n"
+        fr"$L={cavity_length_mm}~\text{{mm}}$"+ "\n"
+        fr"$\text{{ROC}}={roc1_mm}~\text{{mm}}$" + "\n"
+    )
+
     if author not in labels:
         handles.append(line_power)
-        labels.append(author)
+        labels.append(legend_label)
 
 # Titles
 axes[0].set_title("1) Squeezing vs. Input Power (mW)", fontsize=20)
@@ -133,7 +151,8 @@ axes[2].set_title("3) Squeezing vs. Output Coupler", fontsize=20)
 axes[3].set_title("4) Squeezing vs. Mirror ROC (mm)", fontsize=20)
 
 # Legend (centered below plots)
-fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.03), ncol=4, fontsize=18)
+fig.subplots_adjust(bottom=0.15)  # Adjust this value as needed
+fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.01), ncol=len(authors), fontsize=13)
 
 # Caption
 # caption = (
