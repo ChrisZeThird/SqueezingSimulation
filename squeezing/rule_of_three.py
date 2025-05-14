@@ -1,23 +1,14 @@
 import numpy as np
-
 import matplotlib.pyplot as plt
-
 from matplotlib.gridspec import GridSpec
 
 from nlo.sellmeier import n_z
-
 from utils.tools_db import load_all_data
 from utils.settings import settings
 import utils.plot_parameters
 
 
 def safe_divide(array, value):
-    """
-    Some values might be missing in articles like input powers. Adds safeguards for ratio with missing values
-    :param array:
-    :param value:
-    :return:
-    """
     try:
         if value is None or not np.isscalar(value):
             raise ValueError
@@ -27,141 +18,179 @@ def safe_divide(array, value):
 
 
 def safe_multiply(*args):
-    # Replace non-numeric inputs with np.nan
     def safe_to_float(arg):
         try:
-            # Attempt conversion to float
             return np.float64(arg)
         except (ValueError, TypeError):
-            # If conversion fails, return np.nan
             return np.nan
 
-    # Apply safe conversion to each argument
     args = [safe_to_float(arg) for arg in args]
-
-    # If any argument is np.nan, the result will be np.nan
     result = args[0]
     for arg in args[1:]:
         result = np.where(np.isnan(result) | np.isnan(arg), np.nan, result * arg)
-
     return result
 
 
-db_data = load_all_data()  # load the database
+def plot_squeezing_1d():
+    db_data = load_all_data()
+    shg_entries, opo_entries = {}, {}
 
-# Containers for filtered data
-shg_entries = {}
-opo_entries = {}
-# Iterate over all data
-for author, subsystems in db_data.items():
-    for system_name, entries in subsystems.items():
-        if not entries:
+    for author, subsystems in db_data.items():
+        for system_name, entries in subsystems.items():
+            if not entries:
+                continue
+            key = f"{author}:{system_name.lower()}"
+            if "shg" in system_name.lower():
+                shg_entries[key] = entries
+            elif "opo" in system_name.lower():
+                opo_entries[key] = entries
+
+    authors = [key.split(":")[0] for key in opo_entries.keys()]
+    author_colors = {author: plt.cm.tab10(i % 10) for i, author in enumerate(authors)}
+
+    # Set our experiment parameters
+    wavelength = 0.780  # µm
+    input_power = np.linspace(20, 150, 100)  # mW
+    length_crystal = np.array([10, 20, 25, 30])  # mm
+    roc = np.array([50, 75, 100, 150])
+    output_coupler = np.array([0.01, 0.02, 0.05, 0.07, 0.10, 0.12, 0.15])
+    round_trip = np.linspace(450, 600, 100)
+
+    index_780 = n_z(wavelength)
+
+    fig = plt.figure()
+    gs = GridSpec(3, 2, height_ratios=[1, 1, 0.2], hspace=0.4)
+    axes = [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]),
+            fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])]
+    caption_ax = fig.add_subplot(gs[2, :])
+    caption_ax.axis("off")
+
+    handles, labels = [], []
+
+    for author in authors:
+        key = f"{author}:opo"
+        if key not in opo_entries:
             continue
-        key = f"{author}:{system_name.lower()}"
-        if "shg" in system_name.lower():
-            shg_entries[key] = entries
-        elif "opo" in system_name.lower():
-            opo_entries[key] = entries
+        opo = opo_entries[key][0]
 
-# Get all authors who have OPO entries
-authors = [key.split(":")[0] for key in opo_entries.keys()]
-author_colors = {author: plt.cm.tab10(i % 10) for i, author in enumerate(authors)}
+        wavelength_ref = opo["input_wavelength_nm"] * 1e-3
+        index_ratio = index_780 / n_z(wavelength_ref * 2)
+        S = 10 ** (opo["squeezing_dB"] / 10)
 
-# Set our experiment parameters
-wavelength = 0.780  # µm
-input_power = np.linspace(start=20, stop=150, num=100)  # mW
-length_crystal = np.array([10, 20, 25, 30])  # mm
-roc = np.array([50, 75, 100, 150])
-index_780 = n_z(wavelength)
-index_390 = n_z(wavelength/2)
-round_trip = np.linspace(start=450, stop=600, num=100)
-output_coupler = np.array([0.01, 0.02, 0.05, 0.07, 0.10, 0.12, 0.15])
+        # Reference values
+        power_ratio = safe_divide(input_power, opo.get("input_power_mW"))
+        crystal_ratio = safe_divide(length_crystal, opo.get("crystal_length_mm"))
+        coupler_ratio = safe_divide(output_coupler, opo.get("T_output_coupler"))
+        roc_ratio = safe_divide(roc, opo.get("roc1_mm"))
 
-# Create figure and grid layout
-fig = plt.figure()
-gs = GridSpec(3, 2, height_ratios=[1, 1, 0.2], hspace=0.4)
+        sq_power = safe_multiply(S, index_ratio, power_ratio)
+        sq_crystal = safe_multiply(S, index_ratio, crystal_ratio)
+        sq_coupler = safe_multiply(S, index_ratio, coupler_ratio)
+        sq_roc = safe_multiply(S, index_ratio, roc_ratio)
 
-axes = [
-    fig.add_subplot(gs[0, 0]),
-    fig.add_subplot(gs[0, 1]),
-    fig.add_subplot(gs[1, 0]),
-    fig.add_subplot(gs[1, 1])
-]
+        color = author_colors[author]
+        line1, = axes[0].plot(input_power, sq_power, label=author, color=color)
+        line2, = axes[1].plot(length_crystal, sq_crystal, '-s', label=author, color=color)
+        line3, = axes[2].plot(output_coupler, sq_coupler, label=author, color=color)
+        line4, = axes[3].plot(roc, sq_roc, '-s', label=author, color=color)
 
-# Caption axis
-caption_ax = fig.add_subplot(gs[2, :])
-caption_ax.axis("off")
+        legend_label = (
+            fr"$\mathbf{{{author}}}$" + "\n"
+            fr"$\lambda={wavelength_ref:.3f}~\mu\text{{m}}$" + "\n"
+            fr"$P={opo.get('input_power_mW')}~\text{{mW}}$, "
+            fr"$l_c={opo.get('crystal_length_mm')}~\text{{mm}}$" + "\n"
+            fr"$T={opo.get('T_output_coupler')}$, "
+            fr"$\text{{ROC}}={opo.get('roc1_mm')}~\text{{mm}}$"
+        )
+        if author not in labels:
+            handles.append(line1)
+            labels.append(legend_label)
 
-handles, labels = [], []
+    titles = [
+        "1) Squeezing vs. Input Power (mW)",
+        "2) Squeezing vs. Crystal Length (mm)",
+        "3) Squeezing vs. Output Coupler",
+        "4) Squeezing vs. Mirror ROC (mm)"
+    ]
+    for ax, title in zip(axes, titles):
+        ax.set_title(title, fontsize=16)
 
-for author in authors:
-    key = f"{author}:opo"
-    if key not in opo_entries:
-        continue
-    opo = opo_entries[key][0]
+    fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.01),
+               ncol=len(authors), fontsize=12)
+    # plt.tight_layout(rect=[0, 0.12, 1, 1])
+    plt.show()
 
-    wavelength_ref_opo = opo["input_wavelength_nm"] * 1e-3
-    index_ref2 = n_z(wavelength_ref_opo * 2)
-    index_ratio = index_780 / index_ref2
 
-    # Extract parameters for the legend
-    wavelength_ref_opo = opo["input_wavelength_nm"] * 1e-3
-    input_power_mW = opo.get("input_power_mW")
-    crystal_length_mm = opo.get("crystal_length_mm")
-    T_output_coupler = opo.get("T_output_coupler")
-    cavity_length_mm = opo.get("cavity_length_mm")
-    roc1_mm = opo.get("roc1_mm")
+def plot_squeezing_contour(ax, param1, param2, param1_vals, param2_vals, opo, index_ratio, title):
+    X, Y = np.meshgrid(param1_vals, param2_vals)
+    S = 10 ** (opo["squeezing_dB"] / 10)
 
-    power_ratio = safe_divide(input_power, input_power_mW)
-    coupler_ratio = safe_divide(output_coupler, T_output_coupler)
-    crystal_ratio = safe_divide(length_crystal, crystal_length_mm)
-    round_trip_ratio = safe_divide(round_trip, cavity_length_mm)
-    roc_ratio = safe_divide(roc, roc1_mm)
+    def extract_ref(pname):
+        return opo.get({
+            "input_power": "input_power_mW",
+            "crystal_length": "crystal_length_mm",
+            "output_coupler": "T_output_coupler",
+            "roc": "roc1_mm",
+            "cavity_length": "cavity_length_mm"
+        }[pname], np.nan)
 
-    S = 10 ** (opo["squeezing_dB"] / 10)  # sq (dB) = 10 log10 ( ) => S = 10^( sq (dB) / 10 )
-    expected_squeezing_power = safe_multiply(S, index_ratio, power_ratio)
-    expected_squeezing_crystal = safe_multiply(S, index_ratio, crystal_ratio)
-    expected_squeezing_coupler = safe_multiply(S, index_ratio, coupler_ratio)
-    expected_squeezing_roc = safe_multiply(S, index_ratio, roc_ratio)
+    X_ratio = safe_divide(X, extract_ref(param1))
+    Y_ratio = safe_divide(Y, extract_ref(param2))
 
-    color = author_colors[author]
-    line_power, = axes[0].plot(input_power, expected_squeezing_power, label=author, color=color)
-    line_crystal, = axes[1].plot(length_crystal, expected_squeezing_crystal, '-s', label=author, color=color)
-    line_coupler, = axes[2].plot(output_coupler, expected_squeezing_coupler, label=author, color=color)
-    line_roc, = axes[3].plot(roc, expected_squeezing_roc, '-s', label=author, color=color)
+    squeezing = safe_multiply(S, index_ratio, X_ratio, Y_ratio)
 
-    legend_label = (
-        fr"$\mathbf{{{author}}}$: " + "\n"
-        fr"$\lambda={wavelength_ref_opo:.3f}~\mu\text{{m}}$ " + "\n"
-        fr"$P={input_power_mW}~\text{{mW}}$" + "\n"
-        fr"$l_c={crystal_length_mm}~\text{{mm}}$" + "\n"
-        fr"$T={T_output_coupler}$" + "\n"
-        fr"$L={cavity_length_mm}~\text{{mm}}$"+ "\n"
-        fr"$\text{{ROC}}={roc1_mm}~\text{{mm}}$" + "\n"
-    )
+    cp = ax.pcolormesh(X, Y, squeezing, shading='auto', cmap='plasma')
+    ax.set_xlabel(param1.replace("_", " ").title())
+    ax.set_ylabel(param2.replace("_", " ").title())
+    ax.set_title(title)
 
-    if author not in labels:
-        handles.append(line_power)
-        labels.append(legend_label)
+    return cp
 
-# Titles
-axes[0].set_title("1) Squeezing vs. Input Power (mW)", fontsize=20)
-axes[1].set_title("2) Squeezing vs. Crystal Length (mm)", fontsize=20)
-axes[2].set_title("3) Squeezing vs. Output Coupler", fontsize=20)
-axes[3].set_title("4) Squeezing vs. Mirror ROC (mm)", fontsize=20)
 
-# Legend (centered below plots)
-fig.subplots_adjust(bottom=0.15)  # Adjust this value as needed
-fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.01), ncol=len(authors), fontsize=13)
+# Run both
+if __name__ == "__main__":
+    plot_squeezing_1d()
+    # Example contour call for Burks with different parameter pairs
+    db_data = load_all_data()
+    opo_entries = {f"{a}:{s.lower()}": e for a, subs in db_data.items() for s, e in subs.items() if "opo" in s.lower()}
 
-# Caption
-# caption = (
-#     r"The expected squeezing at 780 nm is estimated using: "
-#     r"$S_{780} = S_{\lambda} \times R_P \times R_L \times R_C \times R_R \times R_n$, "
-#     "where each R represents the ratio between the value at 780 nm and the reference value from each article "
-#     "for input power, crystal length, output coupler, and mirror ROC."
-# )
-# caption_ax.text(0.5, 0.5, caption, ha="center", va="center", fontsize=12, wrap=True)
+    burks_key = "Burks:opo"
+    if burks_key in opo_entries:
+        opo = opo_entries[burks_key][0]
 
-plt.tight_layout(rect=[0, 0.12, 1, 1])
-plt.show()
+        index_780 = n_z(0.780)
+        index_ratio = index_780 / n_z(opo["input_wavelength_nm"] * 2 * 1e-3)
+
+        # Define parameter pairs and their values
+        parameter_pairs = [
+            ("input_power", "output_coupler", np.linspace(20, 150, 100), np.linspace(0.01, 0.15, 100)),
+            ("crystal_length", "roc", np.linspace(10, 30, 100), np.linspace(50, 150, 100)),
+            ("input_power", "roc", np.linspace(20, 150, 100), np.linspace(50, 150, 100))
+        ]
+
+        # Create a figure with subplots
+        fig, axes = plt.subplots(1, len(parameter_pairs), figsize=(20, 5))
+
+        for ax, (param1, param2, param1_vals, param2_vals) in zip(axes, parameter_pairs):
+            cp = plot_squeezing_contour(
+                ax=ax,
+                param1=param1,
+                param2=param2,
+                param1_vals=param1_vals,
+                param2_vals=param2_vals,
+                opo=opo,
+                index_ratio=index_ratio,
+                title=f"Squeezing vs. {param1.replace('_', ' ').title()} and {param2.replace('_', ' ').title()}"
+            )
+
+        # Add a colorbar to the figure
+        fig.colorbar(cp, ax=axes[len(axes) - 1], orientation='vertical', fraction=0.1, pad=0.04,
+                     label="Estimated Squeezing")
+
+        # Adjust the layout to make room for the colorbar and prevent overlapping
+        plt.subplots_adjust(wspace=0.3, hspace=0.1)  # Adjust the spacing between subplots
+        plt.tight_layout()  # Adjust the right margin to make room for the colorbar
+        plt.show()
+
+    else:
+        print("Burks data not found.")
