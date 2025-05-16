@@ -1,179 +1,132 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+
 from scipy.constants import c, pi, epsilon_0
-from scipy.special import erf
+from scipy.integrate import dblquad
+from scipy.optimize import minimize_scalar
+
 from utils.settings import settings
 
 import utils.plot_parameters as pm
 
+# ---------------------------
+# KTP absorption
+# ---------------------------
+alpha1, alpha2 = 0.01, 0.01
 
-# Updated Xi function
-def Xi(crystal_length, waist, wavelength, index):
+
+# ---------------------------
+# Core Functions
+# ---------------------------
+
+def Xi(crystal_length, waist, wavelength, index=settings.crystal_index):
     b = (2 * pi * waist**2) / wavelength  # confocal parameter
     xi = crystal_length / b
     return xi
 
 
-# Define other functions as before
-
-def Kappa(B, xi):
-    delta = 2 * B * np.sqrt(xi)
-    numerator = np.exp(-delta ** 2) - 1 + np.sqrt(pi) * delta * erf(delta)
-    return numerator / (delta ** 2)
+def WaistFromXi(xi, crystal_length, wavelength, index):
+    b = crystal_length / xi
+    return np.sqrt((b * wavelength) / (2 * pi))
 
 
-def c1(B):
-    return 0.876 - (18.8/(B + 36.5)) + (0.0166 / (0.0693 + (B - 0.440)**2)) - (0.283/(0.931 + (B + 0.516)**3))
+def compute_K(alpha1, alpha2, waist, wavelength):
+    b = (2 * np.pi * waist**2) / wavelength
+    alpha = alpha1 + 0.5 * alpha2
+    K = 0.5 * alpha * b
+    return K
 
 
-def c2(B):
-    return 0.530 - (36.0/(B + 95.1)) + (0.0103 / (0.332 + (B - 0.569)**2)) - (0.497/(4.69 + (B + 1.15)**3))
+def integrand(tau_prime, tau, sigma, K):
+    exponent = -K * (tau + tau_prime) + 1j * sigma * (tau - tau_prime)
+    denominator = (1 + 1j * tau) * (1 - 1j * tau_prime)
+    return (np.exp(exponent) / denominator).real  # Only real part contributes to SHG power
 
 
-def c3(B):
-    return 0.796 - (0.506/(B + 0.378)) + (0.0601 / (0.421 + (B - 0.673)**2)) + (0.0329/(0.0425 + (B - 0.221)**3))
+def compute_F(sigma, xi, K):
+    result, _ = dblquad(
+        lambda tau_prime, tau: integrand(tau_prime, tau, sigma, K),
+        -xi, xi,
+        lambda tau: -xi, lambda tau: xi,
+        epsabs=1e-6, epsrel=1e-6,  # tighter tolerance
+    )
+    return result / (4 * pi**2)
 
 
-# print(c1(0), c2(0), c3(0))
-# print(np.arctan(c1(0))/(c1(0) + c2(0)*np.arctan(c3(0))))
+def compute_F_fast(sigma, xi, K, N=500):  # increase N
+    tau = np.linspace(-xi, xi, N)
+    tau_prime = np.linspace(-xi, xi, N)
+    d_tau = tau[1] - tau[0]
+
+    T, T_prime = np.meshgrid(tau, tau_prime)
+    exponent = -K * (T + T_prime) + 1j * sigma * (T - T_prime)
+    denominator = (1 + 1j * T) * (1 - 1j * T_prime)
+    integrand = (np.exp(exponent) / denominator).real
+
+    integral = np.sum(integrand) * d_tau**2
+    return integral / (4 * pi**2)
 
 
-def hm(xi, kappa, B=0):
-    if B == 0:
-        kappa = 1
-    numerator = np.arctan(c1(B) * kappa * xi)
-    denominator = c1(B) + c2(B) * xi * np.arctan(c3(B) * xi)
-
-    result = numerator/denominator
-    return result
+def compute_h(sigma, xi, K):
+    # F_val = compute_F(sigma, xi, K)
+    F_val = compute_F_fast(sigma, xi, K)
+    return (pi**2 / xi) * F_val
 
 
-# Define optimal waist calculation
-def optimal_waist(crystal_length=settings.crystal_length, wavelength=settings.wavelength, index=settings.crystal_index, xi_opt=2.84):
-    w_opt = np.sqrt(crystal_length * wavelength / (2 * pi * index * xi_opt))
-    return w_opt
+def optimize_hm(xi, K):
+    res = minimize_scalar(lambda sigma: -compute_h(sigma, xi, K), bounds=(-10, 10), method='bounded')
+    return -res.fun, res.x  # Return maximum h and optimal sigma
 
 
-def prefactor_eta(wavelength_1=settings.wavelength, wavelength_2=settings.wavelength / 2, chi_2=14.9e-12,
-                  L_c=settings.crystal_length, n_1=settings.crystal_index, n_2=1):
-    """
-    Updated pre-factor for eta based on the formula provided (S. Burks).
-    :param L_c: Crystal length
-    :param wavelength_1: Wavelength of the fundamental wave
-    :param wavelength_2: Wavelength of the harmonic wave (second harmonic)
-    :param chi_2: Second-order nonlinear susceptibility (χ^(2)) of the crystal    :param L_c:  length
-    :param n_1: Refractive index of the fundamental wave
-    :param n_2: Refractive index of the harmonic wave
-    :return: The prefactor eta
-    """
-    # Convert wavelengths to angular frequencies (omega)
-    omega_1 = 2 * pi * c / wavelength_1
-    omega_2 = 2 * pi * c / wavelength_2
+# ---------------------------
+# Generate curves for different K values
+# ---------------------------
 
-    # Convert wavelengths to wave vectors (k)
-    k_1 = 2 * pi * n_1 / wavelength_1
-    k_2 = 2 * pi * n_2 / wavelength_2
+xi_vals = np.logspace(start=-2, stop=1, num=50)  # range of xi values
+K_values = [0.0]     # absorption parameters
+results = {}
 
-    # Calculate eta
-    # eta = ((omega_2 ** 2) * (chi_2 ** 2) * k_1 * L_c) / (8 * (n_1 ** 2) * n_2 * epsilon_0 * (c ** 3) * pi)
-    # eta = (2 * omega_1**2 * chi_2**2 * L_c * k_1)/(pi * c**3 * epsilon_0 * n_1**2 * n_2)
-    eta = (4 * omega_1**2 * chi_2**2 * L_c)/(epsilon_0 * c**3 * wavelength_1 * n_1**2)
+for K in K_values:
+    h_vals = []
+    for xi in xi_vals:
+        h, _ = optimize_hm(xi, K)
+        h_vals.append(h)
+    h_vals = np.array(h_vals)
+    max_idx = np.argmax(h_vals)
+    xi_opt = xi_vals[max_idx]
+    h_max = h_vals[max_idx]
+    waist_opt = WaistFromXi(xi_opt, settings.crystal_length, settings.wavelength, settings.crystal_index)
+    results[K] = {
+        "xi_vals": xi_vals,
+        "h_vals": h_vals,
+        "xi_opt": xi_opt,
+        "waist_opt": waist_opt,
+        "h_max": h_max
+    }
 
-    return eta
+# ---------------------------
+# Plotting
+# ---------------------------
 
+plt.figure(figsize=(10, 6))
 
-# Plot setup
-log_xi = np.linspace(-3, 3, 500)
-xi_vals = 10 ** log_xi
-B_values = [1, 2, 4, 8]
-waist_default = optimal_waist()  # Default waist value to optimal waist
-xi_default = Xi(settings.crystal_length, waist_default, wavelength=settings.wavelength, index=settings.crystal_index)
+for K, data in results.items():
+    label = (rf"$K={K}$: "
+             rf"$\xi_{{\mathrm{{opt}}}}={data['xi_opt']:.2f},\, "
+             rf"w_0={data['waist_opt']*1e6:.1f}\,\mu m,\, "
+             rf"h_{{\max}}={data['h_max']:.3f}$")
+    plt.plot(data["xi_vals"], data["h_vals"], label=label)
 
+plt.xscale('log')
+plt.yscale('log')
 
-# Plotting function to update the plot based on waist
-def update(val):
-    waist = waist_slider.val
-    xi = Xi(settings.crystal_length, waist, wavelength=settings.wavelength, index=settings.crystal_index)
+plt.xlabel(r"$\xi$", fontsize=14)
+plt.ylabel(r"$h_m(\xi)$", fontsize=14)
+plt.title("Boyd–Kleinman Optimized $h_m(\\xi)$ for Different Absorption $K$", fontsize=15)
 
-    # Update the vertical line position
-    ax_vline.set_xdata(np.log10(xi))
+plt.grid(True, which="both", linestyle="--", alpha=0.6)
 
-    # Update the scatter points and their values
-    for scatter, text, walkoff in zip(scatter_points, text_annotations, [0] + B_values):
-        if walkoff != 0:
-            kappa_vals = Kappa(walkoff, xi)
-        else:
-            kappa_vals = 1
-        hm_val_at_xi = hm(xi, kappa=kappa_vals, B=walkoff)
-        scatter.set_offsets([np.log10(xi), hm_val_at_xi])
-
-        # Update the text for the scatter point
-        text.set_position((np.log10(xi) + 0.05, hm_val_at_xi))
-        text.set_text(f"{hm_val_at_xi:.3e}")  # Update the value
-
-    # Calculate eta using the prefactor and hm for B=0
-    eta_val = prefactor_eta() * hm(xi, kappa=1, B=0)
-
-    # Update eta text box
-    eta_text.set_text(f"$\\eta = {eta_val:.3e}$")
-
-    # Update the plot without re-drawing the entire figure
-    fig.canvas.draw_idle()
-
-
-# Create the figure and axis
-fig, ax = plt.subplots(figsize=(16,9))
-
-# Plot the curves for B values (initial setup)
-ax.plot(log_xi, hm(xi_vals, kappa=1, B=0), label="B = 0")
-
-for walkoff in B_values:
-    kappa_vals = Kappa(walkoff, xi_vals)
-    hm_vals = hm(xi_vals, kappa_vals, walkoff)
-    ax.plot(log_xi, hm_vals, label=f"B = {walkoff}")
-
-# Add the initial vertical line at the specific xi
-ax_vline = ax.axvline(x=np.log10(xi_default), color='k', linestyle='--')
-
-# Mark the initial intersection points and display the values of hm
-scatter_points = []
-text_annotations = []  # To store text annotations
-for walkoff in [0] + B_values:
-    if walkoff != 0:
-        kappa_vals = Kappa(walkoff, xi_default)
-    else:
-        kappa_vals = 1
-
-    hm_val_at_xi = hm(xi_default, kappa=kappa_vals, B=walkoff)
-    scatter = ax.scatter(np.log10(xi_default), hm_val_at_xi, color='black', zorder=5)
-    scatter_points.append(scatter)
-
-    # Create the text annotation
-    text = ax.text(np.log10(xi_default) + 0.05, hm_val_at_xi, f"{hm_val_at_xi:.3e}", color='black', fontsize=10, verticalalignment='bottom')
-    text_annotations.append(text)
-
-ax.set_xlabel(r"$\log_{10}(\xi)$")
-ax.set_ylabel(r"$h_m(\xi)$")
-ax.set_yscale("log")
-ax.set_ylim(1e-3, 1e1)
-ax.set_title(r"$h_m(\xi)$ vs $\log_{10}(\xi)$ for different $B$")
-ax.legend(fontsize=18)
-ax.grid(True)
-
-plt.subplots_adjust(bottom=0.15)  # <-- This adds space for the slider
-
+plt.legend(fontsize=11)
 plt.tight_layout()
-
-# Add slider for waist adjustment
-ax_slider = plt.axes([0.25, 0.005, 0.65, 0.025], facecolor='lightgoldenrodyellow')
-waist_slider = Slider(ax_slider, 'Waist', 15e-6, 65e-6, valinit=waist_default, valstep=0.02e-6)
-
-# Set slider update function
-waist_slider.on_changed(update)
-
-# Add text box for eta value
-eta_text = ax.text(0.1, 0.95, "", transform=ax.transAxes, fontsize=12, verticalalignment='top', horizontalalignment='right', bbox=dict(facecolor='white', alpha=0.7))
-
-# Show the plot with slider
 plt.show()
