@@ -83,8 +83,8 @@ def optimize_hm(xi, K):
 # Generate curves for different K values
 # ---------------------------
 
-xi_vals = np.logspace(start=-2, stop=1, num=50)  # range of xi values
-K_values = [0.0]     # absorption parameters
+xi_vals = np.logspace(start=-2, stop=1.2, num=70)  # range of xi values
+K_values = [0.0, 0.15, 0.3]     # absorption parameters
 results = {}
 
 for K in K_values:
