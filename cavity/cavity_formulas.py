@@ -71,7 +71,7 @@ def Pump_threshold(T, Loss, E):
 def ABCD_Matrix(L, d_curved, R, l_crystal, index_crystal=settings.crystal_index):
     """
     Ray transfer matrix for a half single pass in a ring bow-tie cavity.
-
+    The stability condition A + D / 2 will be independent for a bow-tie from the distance between the flat mirrors
     :param L: Cavity round-trip length
     :param d_curved: Distance between curved mirrors
     :param R: Radii of curvature of curved mirror
@@ -140,5 +140,7 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
 
     w1, valid_z1 = compute_waist(z1, wavelength, index_crystal)
     w2, valid_z2 = compute_waist(z2, wavelength, 1.0)
+
+    print("Bandwidth: ", Bandwidth_bowtie(T=0.10, Loss=0.02, L=L) * 1e-6)
 
     return z1, z2, w1, w2, (valid_z1, valid_z2)

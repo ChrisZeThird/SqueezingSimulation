@@ -10,6 +10,7 @@ import pandas as pd
 import cavity.cavity_formulas as cf
 from utils.settings import settings
 import utils.plot_parameters as pm
+from utils.settings import settings
 
 import csv
 import os
@@ -95,6 +96,8 @@ def waist():
             print('q1: ', z1)
             print('q2: ', z2)
             return  # or return some default value / raise an exception
+
+        print(r"Valid range of $d_c$ values: ", sweep_array[valid_indices[0]][0] * 1e3,  sweep_array[valid_indices[0]][-1] * 1e3)
 
         # Plot waist
         fig_waist, ax1 = plt.subplots(figsize=(16, 9))
@@ -243,33 +246,95 @@ def plot_w1_w2_vs_L(filename="waist_log.csv", wavelength_nm=780.0):
     plt.show()
 
 
-def angle_evolution(L, dc):
+def angle_evolution(L_values, R=settings.R, l_crystal=settings.crystal_length,
+                    wavelength=settings.wavelength, theta_max=15,
+                    plot=False, fixed_theta_deg=None, dc_range=None):
     """
-    Check how the distance between flat mirror evolves as a function of theta, with L and dc fixed
-    :param L:
-    :param dc:
-    :return:
-    """
-    theta = np.deg2rad(np.linspace(start=0, stop=10, num=100))
-    x = np.cos(theta) / (1 + np.cos(theta))
-    df = L * x - dc
+    Computes d_flat for given L, dc_range, and optional fixed theta values.
 
-    plt.figure(figsize=(16, 9))
-    # plt.xlabel(r"$x = \cos \theta/(1 + \cos \theta)$")
-    plt.xlabel(r"$\theta$")
-    plt.ylabel("$d_f$ (mm) ")
-    # plt.plot(x, df * 1e3)
-    plt.plot(theta, df * 1e3)
-    plt.title(r"Flat mirror separation as a function of $\theta$"+"\nfor a fixed couple ($L$, $d_c$) ")
-    # Display parameters used
-    box_text = f"($L$, $d_c$): {L, dc}"
-    text_box = AnchoredText(box_text, frameon=True, loc='lower right', pad=0.5)
-    plt.setp(text_box.patch, facecolor='white', alpha=settings.alpha)
-    plt.gca().add_artist(text_box)
-    # plt.legend(title="Wavelength")
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+    - If fixed_theta_deg is set (single or list), plots d_flat vs dc for each theta on the same figure.
+    - Else, finds dc that maximizes beam waist and plots d_flat vs theta.
+
+    :param L_values: List of cavity lengths [m]
+    :param R: Radius of curvature [m]
+    :param l_crystal: Crystal length [m]
+    :param wavelength: Laser wavelength [m]
+    :param theta_max: Max theta to scan if sweeping [deg]
+    :param plot: Enable plotting
+    :param fixed_theta_deg: Single value or list of fixed angles [deg] (for d_flat vs dc plots)
+    :param dc_range: Range of curved mirror distances [m]
+    :return: Dict {L: (dc_opt, d_flat_array)} or None if fixed_theta mode
+    """
+    results = {}
+
+    # Default dc range if not supplied
+    if dc_range is None:
+        dc_range = np.linspace(settings.d_curved_min, settings.d_curved_max, settings.number_points)
+    else:
+        dc_range = np.asarray(dc_range)
+
+    # If fixed theta(s) are provided: plot d_flat vs dc for each theta on same figure
+    if fixed_theta_deg is not None:
+        if not hasattr(fixed_theta_deg, '__iter__'):
+            fixed_theta_deg = [fixed_theta_deg]
+
+        for L in L_values:
+            plt.figure()
+            for theta_deg in fixed_theta_deg:
+                theta_rad = np.deg2rad(theta_deg)
+                x = np.cos(theta_rad) / (1 + np.cos(theta_rad))
+                d_flat = L * x - dc_range
+
+                plt.plot(dc_range * 1e3, d_flat * 1e3,
+                         label=rf"$\theta = {theta_deg}^\circ$")
+
+            plt.title(rf"$d_{{\mathrm{{flat}}}}$ vs $d_c$ for $L = {L * 1e3:.0f}$ mm")
+            plt.xlabel("Curved mirror distance $d_c$ [mm]")
+            plt.ylabel("Flat mirror distance $d_{\\mathrm{flat}}$ [mm]")
+            plt.grid(True)
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
+
+        return None
+
+    # Else: default behavior sweeping over theta to find optimal dc
+    theta_dense = np.linspace(0, theta_max, 100)
+    theta_integers = np.arange(0, theta_max + 1)
+    theta = np.union1d(theta_dense, theta_integers)
+    theta_rad = np.deg2rad(theta)
+
+    for L in L_values:
+        z1, z2, w1, w2, valid = cf.Beam_waist(dc_range, L, R, l_crystal, wavelength=wavelength)
+        valid_z1 = valid[0]
+        w1_valid = w1[valid_z1]
+        dc_valid = dc_range[valid_z1]
+
+        if len(w1_valid) == 0:
+            print(f"[!] No valid waist found for L = {L * 1e3:.1f} mm.")
+            continue
+
+        idx_max = np.argmax(w1_valid)
+        dc_opt = dc_valid[idx_max]
+
+        x = np.cos(theta_rad) / (1 + np.cos(theta_rad))
+        d_flat_array = L * x - dc_opt
+        results[L] = (dc_opt, d_flat_array)
+
+        if plot:
+            plt.plot(theta, d_flat_array * 1e3,
+                     label=rf"$L={{{L * 1e3:.0f}}}$ mm; $d_c={{{dc_opt * 1e3:.2f}}}$ mm")
+
+    if plot:
+        plt.xlabel("Folding angle θ [deg]")
+        plt.ylabel("Flat mirror distance $d_{\\mathrm{flat}}$ [mm]")
+        plt.title("Flat mirror distance vs folding angle")
+        plt.legend(loc='upper right')
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
+
+    return results
 
 
 def plot_max_waist_vs_all():
@@ -323,7 +388,7 @@ def plot_max_waist_vs_all():
         ax1.tick_params(axis='y', labelcolor='tab:red')
 
         # Optimal d_curved plot
-        ax2.plot(sweep_array * unit_scale, optimal_dc, color='tab:blue', linestyle='--')
+        ax2.plot(sweep_array * unit_scale, [optimal_dc_value * 1e3 for optimal_dc_value in optimal_dc], color='tab:blue', linestyle='--')
         if i != 0:
             ax2.set_ylabel('Optimal $d_c$ (mm)', color='tab:blue')
         else:
