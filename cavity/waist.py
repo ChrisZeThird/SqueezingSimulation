@@ -99,25 +99,52 @@ def waist():
 
         print(r"Valid range of $d_c$ values: ", sweep_array[valid_indices[0]][0] * 1e3,  sweep_array[valid_indices[0]][-1] * 1e3)
 
+        x_valid = sweep_array[valid_indices[0]]
+        w1_valid = w1[valid_indices[0]]
+        w2_valid = w2[valid_indices[1]]
+
         # Plot waist
         fig_waist, ax1 = plt.subplots(figsize=(16, 9))
 
         color1 = 'tab:red'
         ax1.set_xlabel(xlabel)
         ax1.set_ylabel(r'Beam waist size $w_1$ (mm)', color=color1)
-        ax1.plot(sweep_array[valid_indices[0]] * 1e3, w1[valid_indices[0]] * 1e3, color=color1)
+        ax1.plot(x_valid * 1e3, w1_valid * 1e3, color=color1)
         ax1.tick_params(axis='y', labelcolor=color1)
 
         color2 = 'tab:blue'
         ax2 = ax1.twinx()
         ax2.set_ylabel(r'Beam waist size $w_2$ (mm)', color=color2)
-        ax2.plot(sweep_array[valid_indices[1]] * 1e3, w2[valid_indices[1]] * 1e3, color=color2)
+        ax2.plot(x_valid * 1e3,  w2_valid * 1e3, color=color2)
         ax2.tick_params(axis='y', labelcolor=color2)
 
         # Display parameters used
         text_box = AnchoredText(box_text, frameon=True, loc='upper right', pad=0.5)
         plt.setp(text_box.patch, facecolor='white', alpha=settings.alpha)
         plt.gca().add_artist(text_box)
+
+        # Find max of w1, corresponding w2 and d_c
+        max_index = np.argmax(w1_valid)
+
+        # Add vertical line at the selected d_c
+        selected_dc = x_valid[max_index]  # in mm
+        ax1.axvline(selected_dc * 1e3, color='gray', linestyle='--', linewidth=1)
+        ax1.annotate(f"{selected_dc * 1e3:.1f} mm", xy=(selected_dc * 1e3, 0.), xytext=(selected_dc * 1e3 + 2., 0.001),
+                     rotation=90, va='bottom', fontsize=10, color='gray')
+
+        # Add horizontal line for w1 at that d_c
+        selected_w1 = w1_valid[max_index]  # in mm
+        ax1.axhline(selected_w1 * 1e3, color='tab:red', linestyle='--', linewidth=1)
+        ax1.annotate(f"{selected_w1 * 1e3:.3f} mm", xy=(selected_dc * 1e3, selected_w1 * 1e3),
+                     xytext=(selected_dc * 1e3 + 0.1, selected_w1 * 1e3 + 0.0005),
+                     fontsize=20, color='tab:red')
+
+        # Add horizontal line for w2 at that d_c
+        selected_w2 = w2_valid[max_index]  # in mm
+        ax2.axhline(selected_w2 * 1e3, color='tab:blue', linestyle='--', linewidth=1)
+        ax2.annotate(f"{selected_w2 * 1e3:.3f} mm", xy=(selected_dc * 1e3, selected_w2 * 1e3),
+                     xytext=(selected_dc * 1e3 + 0.1, selected_w2 * 1e3 + 0.005),
+                     fontsize=20, color='tab:blue')
 
         fig_waist.tight_layout()
         plt.show()
