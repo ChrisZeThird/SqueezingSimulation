@@ -17,12 +17,15 @@ intensity = np.abs(F)**2
 
 # Calculate phase
 phase = np.angle(F)
+# Split the phase data into positive and negative parts
+positive_phase_indices = phase >= 0
+negative_phase_indices = phase < 0
 
 # Calculate derivative of reflection intensity
 d_intensity = np.gradient(intensity, w_ratio)
 
 # Create separate plots
-plt.figure(figsize=(8, 4))
+plt.figure(figsize=(8, 8))
 plt.plot(w_ratio, intensity, label='Reflection Intensity |F(ω)|²')
 plt.xlabel('ω / FSR')
 plt.ylabel('Intensity')
@@ -31,16 +34,17 @@ plt.title('Reflection Intensity')
 plt.tight_layout()
 plt.show()
 
-plt.figure(figsize=(8, 4))
-plt.plot(w_ratio, phase, label='Reflection Phase arg(F(ω))', color='orange')
+plt.figure(figsize=(8, 8))
+plt.plot(w_ratio[positive_phase_indices], np.rad2deg(phase[positive_phase_indices]), color='blue')
+plt.plot(w_ratio[negative_phase_indices], np.rad2deg(phase[negative_phase_indices]), color='blue')
 plt.xlabel('ω / FSR')
-plt.ylabel('Phase [rad]')
+plt.ylabel('Phase [°]')
 plt.grid(True)
 plt.title('Reflection Phase')
 plt.tight_layout()
 plt.show()
 
-plt.figure(figsize=(8, 4))
+plt.figure(figsize=(8, 8))
 plt.plot(w_ratio, d_intensity, label='d|F(ω)|² / d(ω / FSR)', color='green')
 plt.xlabel('ω / FSR')
 plt.ylabel('d(Intensity)/d(ω/FSR)')
