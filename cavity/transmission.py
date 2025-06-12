@@ -1,46 +1,50 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Mirror power transmission coefficients (example values)
-T1 = 0.05  # 5% transmission
-T2 = 0.05
-R1 = 1 - T1
-R2 = 1 - T2
+import utils.plot_parameters
 
-# Frequency axis (normalized by FSR)
-omega_FSR = np.linspace(start=0.5, stop=1.5, num=500)
-# Convert normalized frequency to phase (since FSR = 2π/L, we let kL = 2π(omega/FSR))
-kL = 2 * np.pi * omega_FSR
 
-# Transmission intensity
-T = (T1 * T2) / (1 + R1 * R2 - 2 * np.sqrt(R1 * R2) * np.cos(kL))
+# Define parameters
+r = 0.95  # field reflectivity
+w_ratio = np.linspace(start=0.55, stop=1.5, num=1000)  # omega / FSR
 
-# Reflection intensity
-R = 1 - T
+# Define the complex reflection coefficient
+exp_term = np.exp(1j * 2 * np.pi * w_ratio)
+F = r * (exp_term - 1) / (1 - r**2 * exp_term)
 
-# Derivative of reflection
-dR_dnu = np.gradient(R, omega_FSR)
+# Calculate reflection intensity
+intensity = np.abs(F)**2
 
-# Plotting T and R
-plt.figure(figsize=(10, 5))
-plt.plot(omega_FSR, T, label='Transmission $T$', color='blue')
-plt.plot(omega_FSR, R, label='Reflection $R$', color='orange')
-plt.xlabel(r'$\omega / \mathrm{FSR}$', fontsize=12)
-plt.ylabel('Intensity', fontsize=12)
-plt.title('Cavity Transmission and Reflection', fontsize=14)
+# Calculate phase
+phase = np.angle(F)
+
+# Calculate derivative of reflection intensity
+d_intensity = np.gradient(intensity, w_ratio)
+
+# Create separate plots
+plt.figure(figsize=(8, 4))
+plt.plot(w_ratio, intensity, label='Reflection Intensity |F(ω)|²')
+plt.xlabel('ω / FSR')
+plt.ylabel('Intensity')
 plt.grid(True)
-plt.legend()
+plt.title('Reflection Intensity')
 plt.tight_layout()
 plt.show()
 
-# Plotting derivative of reflection
-plt.figure(figsize=(10, 4))
-plt.plot(omega_FSR, dR_dnu, label=r"$\frac{dR}{d(\omega/\mathrm{FSR})}$", color='green')
-plt.axhline(0, color='gray', linestyle='--', linewidth=0.8)
-plt.xlabel(r'$\omega / \mathrm{FSR}$', fontsize=12)
-plt.ylabel(r'Derivative of $R$', fontsize=12)
-plt.title('Derivative of Reflection Intensity', fontsize=14)
+plt.figure(figsize=(8, 4))
+plt.plot(w_ratio, phase, label='Reflection Phase arg(F(ω))', color='orange')
+plt.xlabel('ω / FSR')
+plt.ylabel('Phase [rad]')
 plt.grid(True)
-# plt.legend()
+plt.title('Reflection Phase')
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(8, 4))
+plt.plot(w_ratio, d_intensity, label='d|F(ω)|² / d(ω / FSR)', color='green')
+plt.xlabel('ω / FSR')
+plt.ylabel('d(Intensity)/d(ω/FSR)')
+plt.grid(True)
+plt.title('Derivative of Reflection Intensity')
 plt.tight_layout()
 plt.show()
