@@ -32,7 +32,9 @@ def Bandwidth_bowtie(T, Loss, L):
     :param L: Cavity length
     :return:
     """
+    F = np.pi * np.sqrt(1 - T) / T
     return FSR(L=L) / Finesse(T=T, Loss=Loss)
+    # return FSR(L=L) / F
 
 
 def Bandwidth_linear(cavity_length, transmission_coefficient):

@@ -130,14 +130,14 @@ def waist():
         selected_dc = x_valid[max_index]  # in mm
         ax1.axvline(selected_dc * 1e3, color='gray', linestyle='--', linewidth=1)
         ax1.annotate(f"{selected_dc * 1e3:.1f} mm", xy=(selected_dc * 1e3, np.min(w1_valid) * 1e3),
-                     xytext=(selected_dc * 1e3 + + 0.1, np.min(w1_valid) * 1e3 - 0.0015),
+                     xytext=(selected_dc * 1e3 + + 0.1, np.min(w1_valid) * 1e3),
                      fontsize=20, color='gray')
 
         # Add horizontal line for w1 at that d_c
         selected_w1 = w1_valid[max_index]  # in mm
         ax1.axhline(selected_w1 * 1e3, color='tab:red', linestyle='--', linewidth=1)
         ax1.annotate(f"{selected_w1 * 1e3:.3f} mm", xy=(selected_dc * 1e3, selected_w1 * 1e3),
-                     xytext=(selected_dc * 1e3 + 0.1, selected_w1 * 1e3 + 0.0005),
+                     xytext=(selected_dc * 1e3 + 0.1, selected_w1 * 1e3),
                      fontsize=20, color='tab:red')
 
         # Add horizontal line for w2 at that d_c
