@@ -24,7 +24,7 @@ def bandwidth():
     # bandwidth_colours = ['lightsteelblue', 'cornflowerblue', 'royalblue']
     # bandwidth_cmaps = [mplp.symmetrical_colormap((x, None)) for x in ['Blues', 'Greens', 'Reds']]
 
-    bandwidth_list = np.array([5, 10, 20]) * 1e6
+    bandwidth_list = np.array([6, 10, 20]) * 1e6
     bandwidth_colours = ['lightsteelblue', 'cornflowerblue', 'royalblue']
     bandwidth_cmaps = [mplp.symmetrical_colormap((x, None)) for x in ['Blues', 'Greens', 'Reds']]
 
@@ -72,6 +72,14 @@ def bandwidth():
     for i, (key, (x, y)) in enumerate(values.items(), start=1):
         ax_bandwidth.scatter(x, y, s=90, marker="*", color="black", label=f"{key}")
         ax_bandwidth.text(x + 5e-3, y + 0.002, f"{i}", color="black", fontsize=9, ha='left', va='bottom')
+
+    # contour_6MHz = ax_bandwidth.contour(
+    #     L, T, bandwidth_meshgrid,
+    #     levels=[6],  # since bandwidth_meshgrid is in MHz (after *1e-6)
+    #     colors='black',
+    #     linewidths=2,
+    #     linestyles='--'
+    # )
 
     # Set axis labels
     ax_bandwidth.set_xlabel('Cavity length L (m)')
