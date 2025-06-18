@@ -49,8 +49,8 @@ def WaistFromXi(xi, L, wavelength, index=1):
 
 
 # Generate curves for different crystal lengths
-crystal_lengths = [1e-3, 20e-3]
-xi_vals = np.logspace(-1, 1, 70)
+crystal_lengths = []
+xi_vals = np.logspace(-1, 1, 200)
 results = {}
 
 for L in crystal_lengths:
