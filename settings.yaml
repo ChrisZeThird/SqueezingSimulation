@@ -1,5 +1,5 @@
 # Plot parameter
-number_points: 300
+number_points: 1000
 
 waist_vs: 'dc'
 

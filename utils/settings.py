@@ -23,7 +23,7 @@ class Settings:
     # -- Plot parameter -- #
     number_points: int = 1000   # size of arrays
     cmap_name: str = 'rainbow'  # cmap to use
-    alpha: float = 0.3          # alpha channel value for bandwidth highlight
+    alpha: float = 1.          # alpha channel value for bandwidth highlight
 
     waist_vs: str = 'dc'        # decide against what parameter the waist is ploted
 
