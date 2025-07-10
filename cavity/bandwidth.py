@@ -100,3 +100,41 @@ def bandwidth():
              rotation=270, transform=fig_bandwidth.transFigure, fontsize=mplp.MEDIUM_SIZE)
 
     plt.show()
+
+
+def Delta(n, l, T):
+    """
+    Calculate the bandwidth of a cavity in the frequency domain.
+    :param n: integer number of the wavelength
+    :param l: wavelength
+    :param T: transmission coefficient
+    :return:
+    """
+    return 2 * np.pi * c /(n * l * T)
+
+
+c = 3.0e8  # Speed of light in m/s
+wavelength = settings.wavelength  # Wavelength in meters (e.g., 780 nm)
+T = np.array([0.05, 0.07, 0.1, 0.2, 0.3])  # Transmission coefficients
+n = np.linspace(start=1., stop=10., num=800, dtype=int) * 1e9
+
+target_bandwidth = 10  # Target bandwidth in Hz (e.g., 10 MHz)
+acceptance_range = 0.2
+
+for t in T:
+    bandwidth_values = Delta(n, wavelength, t)
+    plt.plot(n, bandwidth_values * 1e-6, label=f"T={t}", linestyle='-', marker='o')
+
+    # Identify values of n where bandwidth is approximately 6-10 MHz
+    close_indices = np.where(np.isclose(bandwidth_values, target_bandwidth, atol=acceptance_range * target_bandwidth))  # Tolerance of 100 kHz
+    # print(close_indices)
+    if len(close_indices[0]) > 0:
+        close_n = n[close_indices][0]
+        L = close_n * wavelength
+        print(f"n={close_n:.2e}, L={L:.2e} m, T={t}, Bandwidth={bandwidth_values[close_indices][0]:.2e} Hz")
+
+plt.axhline(y=target_bandwidth, color='gray', linestyle='--')
+plt.ylabel('Bandwidth (MHz)')
+plt.xlabel('Integer number of wavelengths n')
+plt.legend()
+plt.show()
