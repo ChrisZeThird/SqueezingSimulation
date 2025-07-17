@@ -6,6 +6,7 @@ from scipy.integrate import dblquad
 from scipy.optimize import fsolve
 
 from nlo.sellmeier import n_z
+import utils.plot_parameters
 from utils.settings import settings
 
 # Analysis of singly resonant SHG efficiency versus focusing
@@ -38,7 +39,7 @@ def h_function(alpha, L):
 
 
 # Focusing parameter sweep
-w0_range = np.linspace(18e-6, 100e-6, 500)
+w0_range = np.linspace(15e-6, 150e-6, 500)
 z_R = np.pi * w0_range ** 2 * n_pump / wavelength_pump
 L_array = L_c / z_R
 alpha = (alpha_pump - alpha_harmonic / 2) * z_R
@@ -68,13 +69,11 @@ def T1_opt(Gamma, epsilon=0.02, P_in=310e-3):
     return (epsilon / 2) + np.sqrt((epsilon / 2) ** 2 + (Gamma * P_in))
 
 
-T1 = T1_opt(Gamma=Gamma_tot)
-print(T1)
+
+# print(T1)
+
 
 # Eq (3): Solve numerically for eta
-eta_vals = []
-
-
 def solve_eta(T1, Gamma, Gamma_eff, P_in=310e-3, epsilon=0.02):
     """
     Solve the implicit eta equation from Le Targat et al.:
@@ -97,17 +96,27 @@ def solve_eta(T1, Gamma, Gamma_eff, P_in=310e-3, epsilon=0.02):
     return eta_solution if 0 <= eta_solution <= 1 else np.nan
 
 
-for T1, G, Geff in zip(T1, Gamma_tot, Gamma_eff):
-    eta = solve_eta(T1, G, Geff)
-    eta_vals.append(eta)
+# Input power range
+P_in_values = np.array([100, 200, 310, 500])  # Different input powers in watts
+eta_results = {}
 
-print(eta_vals)
+for P_in in P_in_values:
+    eta_vals = []
+    T1 = T1_opt(Gamma=Gamma_tot, P_in=P_in*1e-3)
+    for T1, G, Geff in zip(T1, Gamma_tot, Gamma_eff):
+        eta = solve_eta(T1, G, Geff, P_in=P_in*1e-3)
+        eta_vals.append(eta)
+    eta_results[str(P_in)] = np.array(eta_vals)
+
+
 # Plotting
 plt.figure(figsize=(8, 5))
-plt.plot(L_array, eta_vals, 'b-')
+for P_in, eta_vals in eta_results.items():
+    plt.plot(L_array, eta_vals, label=f"P_in = {P_in} mW")
 plt.xlabel("Focusing Parameter L = Lc / zR")
 plt.ylabel("Conversion Efficiency η")
-plt.title("SHG Efficiency η vs Focusing Parameter L")
+plt.title("SHG Efficiency η vs Focusing Parameter L for Different Input Powers")
+plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
