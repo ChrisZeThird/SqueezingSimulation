@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from scipy.special import jv  # Bessel functions
-from scipy.signal import find_peaks
 
 import utils.plot_parameters
 
@@ -26,36 +25,6 @@ negative_phase_indices = phase < 0
 
 # Calculate derivative of reflection intensity
 d_intensity = np.gradient(intensity, w_ratio)
-
-# Create separate plots
-# plt.figure(figsize=(8, 8))
-# plt.plot(w_ratio, intensity, label='Reflection Intensity |F(ω)|²')
-# plt.xlabel('ω / FSR')
-# plt.ylabel('Intensity')
-# plt.grid(True)
-# plt.title('Reflection Intensity')
-# plt.tight_layout()
-# plt.show()
-#
-# plt.figure(figsize=(8, 8))
-# plt.plot(w_ratio[positive_phase_indices], np.rad2deg(phase[positive_phase_indices]), color='blue')
-# plt.plot(w_ratio[negative_phase_indices], np.rad2deg(phase[negative_phase_indices]), color='blue')
-# plt.xlabel('ω / FSR')
-# plt.ylabel('Phase [°]')
-# plt.grid(True)
-# plt.title('Reflection Phase')
-# plt.tight_layout()
-# plt.show()
-#
-# plt.figure(figsize=(8, 8))
-# plt.plot(w_ratio, d_intensity, label='d|F(ω)|² / d(ω / FSR)', color='green')
-# plt.xlabel('ω / FSR')
-# plt.ylabel('d(Intensity)/d(ω/FSR)')
-# plt.grid(True)
-# plt.title('Derivative of Reflection Intensity')
-# plt.tight_layout()
-# plt.show()
-
 
 # Courtesy of Matteo GADANI
 # Parameters of the bow tie cavity

@@ -5,20 +5,19 @@ from utils.settings import settings
 
 
 # -- General cavity formulas -- #
-def Finesse(T, Loss):
+def Finesse(T, Loss=0.):
     """
-    Cavity Finesse
+    Cavity Finesse for a bow-tie ring cavity.
     :param T: Transmission coefficient
     :param Loss: Intra-cavity Loss
     :return:
     """
-    # return np.pi * (((1 - T) * (1 - Loss)) ** (1/4)) / (1 - np.sqrt((1 - T) * (1 - Loss)))
-    return np.pi * (np.sqrt((1 - T) * (1 - Loss))) / (1 - np.sqrt((1 - T) * (1 - Loss)))
+    return np.pi * ((1 - T) * (1 - Loss))**(1/4) / (1 - np.sqrt((1 - T) * (1 - Loss)))
 
 
 def FSR(L):
     """
-    Free Spectral Range (frequency domain)
+    Free Spectral Range (frequency domain) for a bow-tie ring cavity
     :param L: Cavity length
     :return:
     """
@@ -33,9 +32,7 @@ def Bandwidth_bowtie(T, Loss, L):
     :param L: Cavity length
     :return:
     """
-    # F = np.pi * np.sqrt(1 - T) / T
     return FSR(L=L) / Finesse(T=T, Loss=Loss)
-    # return FSR(L=L) / F
 
 
 def Bandwidth_linear(cavity_length, transmission_coefficient):

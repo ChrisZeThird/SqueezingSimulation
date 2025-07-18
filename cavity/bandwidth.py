@@ -10,21 +10,15 @@ import utils.plot_parameters as mplp
 import cavity.cavity_formulas as cf
 
 
-def bandwidth():
+def bandwidth(bandwidth_list=np.array([6, 10, 20])*1e6):
     # Setting parameters
     cavity_lengths = np.linspace(start=settings.min_L, stop=settings.max_L, num=settings.number_points)
     transmission_coefficients = np.linspace(start=settings.min_T, stop=settings.max_T, num=settings.number_points)
 
     L, T = np.meshgrid(cavity_lengths, transmission_coefficients)
-    # bandwidth_meshgrid = cf.Bandwidth_linear(cavity_length=L, transmission_coefficient=T) * 1e-6
     bandwidth_meshgrid = cf.Bandwidth_bowtie(T=T, L=L, Loss=settings.cavity_loss) * 1e-6
 
-    # Bandwidths list
-    # bandwidth_list = np.array([1, 10, 100]) * 1e6
-    # bandwidth_colours = ['lightsteelblue', 'cornflowerblue', 'royalblue']
-    # bandwidth_cmaps = [mplp.symmetrical_colormap((x, None)) for x in ['Blues', 'Greens', 'Reds']]
-
-    bandwidth_list = np.array([6, 10, 20]) * 1e6
+    # Define the colours and colormaps for the bandwidths
     bandwidth_colours = ['lightsteelblue', 'cornflowerblue', 'royalblue']
     bandwidth_cmaps = [mplp.symmetrical_colormap((x, None)) for x in ['Blues', 'Greens', 'Reds']]
 
@@ -37,13 +31,7 @@ def bandwidth():
     ax2 = fig_bandwidth.add_axes((0.75, 0.395, 0.1, 0.28))
     ax3 = fig_bandwidth.add_axes((0.75, 0.69, 0.1, 0.28))
     ax_bandwidth = fig_bandwidth.add_axes((0.1, 0.1, 0.7, 0.87))
-    # ax_title_cbar = fig_bandwidth.add_axes((0.85, 0.05, 0.1, 0.92))
     axes = [ax1, ax2, ax3]
-
-    # contour_plot = ax_bandwidth.contourf(L, T, bandwidth_meshgrid, clev, cmap=mplp.cmap, norm=matplotlib.colors.LogNorm(vmin=1, vmax=bandwidth_meshgrid.max()))
-    # contour_plot.set_clim(vmin=1, vmax=round(bandwidth_meshgrid.max()))
-    # cbar = plt.colorbar(contour_plot, ax=ax_bandwidth)
-    # cbar.outline.set_visible(False)
 
     for central_freq, colour, selected_cmap, axis in zip(bandwidth_list, bandwidth_colours, bandwidth_cmaps, axes):
 
@@ -72,14 +60,6 @@ def bandwidth():
     for i, (key, (x, y)) in enumerate(values.items(), start=1):
         ax_bandwidth.scatter(x, y, s=90, marker="*", color="black", label=f"{key}")
         ax_bandwidth.text(x + 5e-3, y + 0.002, f"{i}", color="black", fontsize=9, ha='left', va='bottom')
-
-    # contour_6MHz = ax_bandwidth.contour(
-    #     L, T, bandwidth_meshgrid,
-    #     levels=[6],  # since bandwidth_meshgrid is in MHz (after *1e-6)
-    #     colors='black',
-    #     linewidths=2,
-    #     linestyles='--'
-    # )
 
     # Set axis labels
     ax_bandwidth.set_xlabel('Cavity length L (m)')

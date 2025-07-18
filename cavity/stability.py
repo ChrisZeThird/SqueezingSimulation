@@ -22,11 +22,6 @@ l_crystal_array = np.array([10, 15, 20, 25, 30]) * 1e-3  # mm to meters
 
 
 # --- FUNCTIONS ---
-def generate_meshgrid(param_x, values_x, param_y, values_y):
-    X_grid, Y_grid = np.meshgrid(values_x, values_y)
-    return X_grid, Y_grid
-
-
 def plot_stability_contour(param_x, param_y, x_range, y_range, fixed_params, discrete_R=None, discrete_l_crystal=None, discrete_L=None):
     X_grid, Y_grid = np.meshgrid(x_range, y_range)
     stability_map = np.full_like(X_grid, np.nan)
@@ -102,88 +97,10 @@ def get_fixed_params(x_param, y_param):
 
 
 # Plot combinations
-plot_stability_contour('R', 'L', R_range, L_range, get_fixed_params('R', 'L'), discrete_R=np.array([50, 100, 150]) * 1e-3, discrete_L=np.array([550, 790]) * 1e-3)
-plot_stability_contour('l_crystal', 'L', l_crystal_range, L_range, get_fixed_params('l_crystal', 'L'),
-                      discrete_l_crystal=np.array([10, 20, 30]) * 1e-3, discrete_L=np.array([550, 790]) * 1e-3)
-plot_stability_contour('R', 'l_crystal', R_range, l_crystal_range, get_fixed_params('R', 'l_crystal'),
-                       discrete_R=np.array([50, 100, 150]) * 1e-3, discrete_l_crystal=np.array([10, 20, 30]) * 1e-3)
+if __name__ == '__main__':
 
-# --- SINGLE PARAMETER PLOT ---
-# fig, ax = plt.subplots(figsize=(12, 6))
-# line_labels = []
-#
-# for lc in l_crystal_array:
-#     d_valid, s_valid, w_valid = stability_condition(
-#         d_curved=d_curved,
-#         L=L,
-#         R=R,
-#         l_crystal=lc,
-#         index_crystal=settings.crystal_index,
-#         wavelength=settings.wavelength
-#     )
-#
-#     if d_valid.size == 0:
-#         continue
-#
-#     max_idx = np.argmax(w_valid)
-#     d_max = d_valid[max_idx] * 1e3
-#     s_max = s_valid[max_idx]
-#     w_max = w_valid[max_idx] * 1e6
-#
-#     label = f'$l_{{c}}$ = {lc*1e3:.0f} mm, $w_{{max}}$ = {w_max:.1f} µm'
-#     line, = ax.plot(d_valid * 1e3, s_valid, label=label)
-#     color = line.get_color()
-#
-#     ax.plot(d_max, s_max, 'o', color=color, markersize=6)
-#     line_labels.append((line, label))
-#
-# ax.axhline(1, color='r', linestyle='--', linewidth=1, label='Stability limits')
-# ax.axhline(-1, color='r', linestyle='--', linewidth=1)
-# ax.fill_between(d_curved * 1e3, -1, 1, color='green', alpha=0.1)
-# ax.set_xlabel('Curved mirror distance $d_c$ (mm)')
-# ax.set_ylabel('Stability parameter $s$')
-# ax.set_title('Stability parameter vs $d_c$ for different crystal lengths')
-#
-# box = ax.get_position()
-# ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-#
-# line_legend = ax.legend(
-#     handles=[line[0] for line in line_labels],
-#     labels=[line[1] for line in line_labels],
-#     loc='center left',
-#     bbox_to_anchor=(1, 0.8)
-# )
-#
-# L_line = Line2D([0], [0], color='white', lw=0)
-# R_line = Line2D([0], [0], color='white', lw=0)
-# wavelength_line = Line2D([0], [0], color='white', lw=0)
-#
-# param_legend = ax.legend(
-#     handles=[L_line, R_line, wavelength_line],
-#     labels=[f'L = {L} m', f'R = {R} m', f'Wavelength = {settings.wavelength * 1e9} nm'],
-#     loc='center left',
-#     bbox_to_anchor=(1, 0.15),
-#     handlelength=0,
-#     title='Used Parameters',
-#     title_fontsize='medium'
-# )
-# param_legend.get_title().set_fontweight('bold')
-# param_legend._legend_box.align = "left"
-#
-# stability_limit_line = Line2D([0], [0], color='r', linestyle='--', linewidth=1)
-# stable_region_patch = plt.Line2D([0], [0], color='green', alpha=0.1, lw=10)
-# max_waist_dot = Line2D([0], [0], color='black', marker='o', markersize=6, linestyle='None')
-#
-# indication_legend = ax.legend(
-#     handles=[stability_limit_line, stable_region_patch, max_waist_dot],
-#     labels=['Stability bounds: s = ±1', 'Stable region', 'Max waist'],
-#     loc='upper left',
-#     bbox_to_anchor=(1, 0.6)
-# )
-#
-# ax.add_artist(line_legend)
-# ax.add_artist(param_legend)
-# ax.add_artist(indication_legend)
-# plt.subplots_adjust(right=0.7)
-# ax.grid(True)
-# plt.show()
+    plot_stability_contour('R', 'L', R_range, L_range, get_fixed_params('R', 'L'), discrete_R=np.array([50, 100, 150]) * 1e-3, discrete_L=np.array([550, 790]) * 1e-3)
+    plot_stability_contour('l_crystal', 'L', l_crystal_range, L_range, get_fixed_params('l_crystal', 'L'),
+                          discrete_l_crystal=np.array([10, 20, 30]) * 1e-3, discrete_L=np.array([550, 790]) * 1e-3)
+    plot_stability_contour('R', 'l_crystal', R_range, l_crystal_range, get_fixed_params('R', 'l_crystal'),
+                           discrete_R=np.array([50, 100, 150]) * 1e-3, discrete_l_crystal=np.array([10, 20, 30]) * 1e-3)

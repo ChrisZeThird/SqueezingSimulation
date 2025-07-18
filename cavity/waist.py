@@ -1,19 +1,12 @@
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import matplotlib.cm as cm
-from matplotlib.lines import Line2D
 
 import numpy as np
-import pandas as pd
 
 import cavity.cavity_formulas as cf
 import utils.plot_parameters as pm
 from utils.settings import settings
-
-import csv
-import os
-from datetime import datetime
 
 
 def waist():
@@ -148,129 +141,6 @@ def waist():
 
         fig_waist.tight_layout()
         plt.show()
-
-        # Find max of w1
-        # max_idx = np.argmax(w1[valid_indices[0]])
-        # max_w1 = w1[valid_indices[0]][max_idx]
-        # associated_w2 = w2[valid_indices[0]][max_idx]
-        # associated_param = sweep_array[valid_indices[0]][max_idx]
-        #
-        # row = {
-        #     'timestamp': datetime.now().isoformat(timespec='seconds'),
-        #     'sweep_param': plot_vs,
-        #     'sweep_value_mm': associated_param * 1e3,
-        #     'max_w1_mm': max_w1 * 1e3,
-        #     'associated_w2_mm': associated_w2 * 1e3,
-        #     'L_mm': length_test[i] * 1e3,  # length_test[i]
-        #     'd_curved_mm': settings.fixed_d_curved * 1e3,
-        #     'R_mm': settings.R * 1e3,
-        #     'l_crystal_mm': settings.crystal_length * 1e3,
-        #     'index_crystal': settings.crystal_index,
-        #     'wavelength_nm': settings.wavelength * 1e9
-        # }
-        #
-        # # Define file path
-        # log_path = 'waist_log.csv'
-        # file_exists = os.path.isfile(log_path)
-        #
-        # # Append to CSV
-        # with open(log_path, 'a', newline='') as csvfile:
-        #     writer = csv.DictWriter(csvfile, fieldnames=row.keys())
-        #     if not file_exists:
-        #         writer.writeheader()
-        #     writer.writerow(row)
-
-
-def plot_from_csv(filename="waist_log.csv"):
-    # Load the CSV
-    df = pd.read_csv(filename)
-
-    # Filter only for given sweep
-    df_dc = df[df["sweep_param"] == settings.waist_vs]
-
-    # Group by wavelength and plot one line per group
-    plt.figure(figsize=(8, 5))
-
-    for wavelength, group in df_dc.groupby("wavelength_nm"):
-        group_sorted = group.sort_values("L_mm")
-        plt.plot(group_sorted["L_mm"],
-                 group_sorted["sweep_value_mm"],
-                 label=f"{wavelength} nm",
-                 alpha=1)
-        break
-
-    plt.xlabel("$L$ (mm)")
-    plt.ylabel("$d_c$ (mm) ")
-    plt.title("Optimal Mirror Distance $d_c$ vs Cavity Length $L$ for max $w_1$")
-    # plt.legend(title="Wavelength")
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
-
-
-def plot_w1_w2_vs_L(filename="waist_log.csv", wavelength_nm=780.0):
-    # Load the CSV
-    df = pd.read_csv(filename)
-
-    # Filter only for the fixed wavelength and sweep type
-    df_filtered = df[
-        (df["wavelength_nm"] == wavelength_nm) &
-        (df["sweep_param"] == settings.waist_vs)
-    ]
-
-    # Get unique R values and assign colors
-    unique_Rs = sorted(df_filtered["R_mm"].unique())
-    colors = cm.viridis(np.linspace(0, 1, len(unique_Rs)))
-
-    fig, ax = plt.subplots(figsize=(18, 9))
-
-    for color, R in zip(colors, unique_Rs):
-        df_R = df_filtered[df_filtered["R_mm"] == R].sort_values("L_mm")
-
-        # Plot w1 and w2 with same color
-        ax.plot(df_R["L_mm"], df_R["max_w1_mm"] * 1e3, color=color, linestyle='-')  # w1
-        ax.plot(df_R["L_mm"], df_R["associated_w2_mm"] * 1e3, color=color, linestyle='--')  # w2
-
-    # Legend for w1 and w2
-    legend_waists = ax.legend(
-        handles=[
-            Line2D([0], [0], color='black', linestyle='-', label="$w_1$"),
-            Line2D([0], [0], color='black', linestyle='--', label="$w_2$")
-        ],
-        loc='upper left',
-        bbox_to_anchor=(1.02, 1.02),
-        title='Waists',
-        title_fontsize=pm.MEDIUM_SIZE-5
-    )
-
-    legend_waists._legend_box.align = "left"
-    ax.add_artist(legend_waists)
-
-    # Legend for R values
-    legend_R = ax.legend(
-        handles=[
-            Line2D([0], [0], color=color, linestyle='-', linewidth=2, label=f"${R:.3f}$ mm")
-            for color, R in zip(colors, unique_Rs)
-        ],
-        loc='lower left',
-        bbox_to_anchor=(1.02, 0.0),
-        title="$R$ (Mirror Radius)",
-        title_fontsize=pm.MEDIUM_SIZE-5,
-        fontsize=18
-    )
-    legend_R._legend_box.align = "left"
-    ax.add_artist(legend_R)
-
-    # Labels and layout
-    ax.set_xlabel("$L$ (mm)")
-    ax.set_ylabel("Waist size (μm)")
-    ax.set_title(f"Max $w_1$ and Associated $w_2$ vs $L$ at {wavelength_nm} nm")
-    ax.grid(True)
-
-    # Increase margin for legends
-    plt.subplots_adjust(right=0.5)
-    plt.tight_layout()
-    plt.show()
 
 
 def angle_evolution(L_values, R=settings.R, l_crystal=settings.crystal_length,
