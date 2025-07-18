@@ -69,10 +69,6 @@ def T1_opt(Gamma, epsilon=0.02, P_in=310e-3):
     return (epsilon / 2) + np.sqrt((epsilon / 2) ** 2 + (Gamma * P_in))
 
 
-
-# print(T1)
-
-
 # Eq (3): Solve numerically for eta
 def solve_eta(T1, Gamma, Gamma_eff, P_in=310e-3, epsilon=0.02):
     """

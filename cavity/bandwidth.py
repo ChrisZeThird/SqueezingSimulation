@@ -100,3 +100,7 @@ def bandwidth():
              rotation=270, transform=fig_bandwidth.transFigure, fontsize=mplp.MEDIUM_SIZE)
 
     plt.show()
+
+
+if __name__ == "__main__":
+    bandwidth()

@@ -21,13 +21,13 @@ fixed_length: 650e-3
 fixed_d_curved: 125e-3
 min_L: 200e-3
 max_L: 800e-3
-cavity_loss: 0.03
+cavity_loss: 0.0
 d_curved_min: 50e-3
 d_curved_max: 250e-3
 
 # Transmission coefficients
-min_T: 0.
-max_T: 0.3
+min_T: 0.01
+max_T: 0.2
 R: 100e-3
 
 # Bandwidth

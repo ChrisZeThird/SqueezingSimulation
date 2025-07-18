@@ -32,15 +32,6 @@ def finding_unknown_distance(L, R, l, d_curved):
     return d_flat, OF, OC, cos_theta, S
 
 
-# L = 500e-3
-# d_curved = 57.7e-3
-# R = 100e-3
-# l = 10e-3
-#
-# d_flat, OF, OC, cos_theta, S = finding_unknown_distance(L, R, l, d_curved)
-# print('Distance between the flat mirrors: ', d_flat)
-
-
 def equivalent_cavity(d_flat, d_curved, l, R):
     """
 
