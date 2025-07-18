@@ -8,8 +8,8 @@ import numpy as np
 from utils.settings import settings
 
 # -- Matplotlib parameters -- #
-SMALL_SIZE = 18
-MEDIUM_SIZE = 25
+SMALL_SIZE = 12
+MEDIUM_SIZE = 20
 BIGGER_SIZE = 28
 
 plt.rc('font', size=SMALL_SIZE)  # controls default text sizes

@@ -5,20 +5,19 @@ from utils.settings import settings
 
 
 # -- General cavity formulas -- #
-def Finesse(T, Loss):
+def Finesse(T, Loss=0.):
     """
-    Cavity Finesse
+    Cavity Finesse for a bow-tie ring cavity.
     :param T: Transmission coefficient
     :param Loss: Intra-cavity Loss
     :return:
     """
-    # return np.pi * (((1 - T) * (1 - Loss)) ** (1/4)) / (1 - np.sqrt((1 - T) * (1 - Loss)))
-    return np.pi * (np.sqrt((1 - T) * (1 - Loss))) / (1 - np.sqrt((1 - T) * (1 - Loss)))
+    return np.pi * ((1 - T) * (1 - Loss))**(1/4) / (1 - np.sqrt((1 - T) * (1 - Loss)))
 
 
 def FSR(L):
     """
-    Free Spectral Range (frequency domain)
+    Free Spectral Range (frequency domain) for a bow-tie ring cavity
     :param L: Cavity length
     :return:
     """
@@ -33,9 +32,7 @@ def Bandwidth_bowtie(T, Loss, L):
     :param L: Cavity length
     :return:
     """
-    # F = np.pi * np.sqrt(1 - T) / T
     return FSR(L=L) / Finesse(T=T, Loss=Loss)
-    # return FSR(L=L) / F
 
 
 def Bandwidth_linear(cavity_length, transmission_coefficient):
@@ -144,6 +141,6 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
     w1, valid_z1 = compute_waist(z1, wavelength, index_crystal)
     w2, valid_z2 = compute_waist(z2, wavelength, 1.0)
 
-    print("Bandwidth: ", Bandwidth_bowtie(T=0.10, Loss=0.02, L=L) * 1e-6)
+    # print("Bandwidth: ", Bandwidth_bowtie(T=0.10, Loss=0.02, L=L) * 1e-6)
 
     return z1, z2, w1, w2, (valid_z1, valid_z2)
