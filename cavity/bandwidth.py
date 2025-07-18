@@ -1,11 +1,15 @@
 from matplotlib.offsetbox import AnchoredText
+from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 import numpy as np
 
+import sqlite3
+
 from utils.settings import settings
 import utils.plot_parameters as mplp
+from utils.tools_db import load_all_data
 
 import cavity.cavity_formulas as cf
 
@@ -54,24 +58,65 @@ def bandwidth(bandwidth_list=np.array([6, 10, 20])*1e6):
         cbar_zone.set_ticks(cbar_zone_ticks[1:-1])
 
     # Add some points to give couples from different articles
-    values = {"Masada": (500e-3, 0.1), "Burks": (550e-3, 0.07), "Tanimura": (600e-3, 0.1), "Aoki": (215e-3, 0.15), "Hétet": (600e-3, 0.18)}
+    # Fetch data from the database
+    data = load_all_data()
 
-    # Plot all in black with star markers and a unique index label
-    for i, (key, (x, y)) in enumerate(values.items(), start=1):
-        ax_bandwidth.scatter(x, y, s=90, marker="*", color="black", label=f"{key}")
-        ax_bandwidth.text(x + 5e-3, y + 0.002, f"{i}", color="black", fontsize=9, ha='left', va='bottom')
+    # Plot SHG and SPDC data
+    index = 1
+    shg_legend_elements = []
+    spdc_legend_elements = []
 
+    shg_marker = "o"
+    spdc_marker = "*"
+
+    for author, entries in data.items():
+        # Plot SHG entries
+        for shg_entry in entries["shg"]:
+            x, y = shg_entry["cavity_length_mm"] / 1000, shg_entry["T_input_coupler"]
+            ax_bandwidth.scatter(x, y, s=90, marker=shg_marker, color="black")
+            ax_bandwidth.text(x + 5e-3, y + 0.002, f"{index}", color="black", fontsize=9, ha='left', va='bottom')
+        shg_legend_elements.append(Line2D([0], [0], marker=shg_marker, color="black", label=f"{index}. {author}", linestyle=""))
+
+        # Plot SPDC entries
+        for opo_entry in entries["opo"]:
+            x, y = opo_entry["cavity_length_mm"] / 1000, opo_entry["T_output_coupler"]
+            ax_bandwidth.scatter(x, y, s=90, marker=spdc_marker, color="black")
+            ax_bandwidth.text(x + 5e-3, y + 0.002, f"{index}", color="black", fontsize=9, ha='left', va='bottom')
+        spdc_legend_elements.append(Line2D([0], [0], marker=spdc_marker, color="black", label=f"{index}. {author}", linestyle=""))
+
+        index += 1
+
+    legend_elements = shg_legend_elements + spdc_legend_elements
+
+    # Create a text box for authors
+    authors_text = "\n".join([f"{index}. {author}" for index, author in enumerate(data.keys(), start=1)])
+    authors_box = AnchoredText(
+        authors_text,
+        loc="upper left",  # Adjust position as needed
+        prop={'size': 15},
+        frameon=True,  # Add a box around the text
+        pad=0.5,
+        borderpad=1
+    )
+    ax_bandwidth.add_artist(authors_box)  # Add the text box to the plot
+
+    # Create a legend for the markers (SHG and SPDC)
+    marker_legend_elements = [
+        Line2D([0], [0], marker=shg_marker, color="black", label="SHG", linestyle="none"),
+        Line2D([0], [0], marker=spdc_marker, color="black", label="SPDC", linestyle="none")
+    ]
+
+    ax_bandwidth.legend(
+        handles=marker_legend_elements,
+        loc="upper right",  # Adjust position as needed
+        prop={'size': 15},
+        frameon=True,  # Add a box around the legend
+        title="Markers"
+    )
     # Set axis labels
     ax_bandwidth.set_xlabel('Cavity length L (m)')
     ax_bandwidth.set_ylabel('Transmission coefficient')
 
-    # Legend with text-only entries (no markers)
-    legend_elements = [
-        mpatches.Patch(color='none', label=f"{i}. {key}")  # transparent patch (invisible)
-        for i, key in enumerate(values.keys(), start=1)
-    ]
-
-    ax_bandwidth.legend(handles=legend_elements, loc="upper left", prop={'size': 15}, handlelength=0, handletextpad=0)
     # Add text vertically on the right side of the axes
     text_y_pos = 0.5  # Vertically centered position
     text_x_pos = 0.92  # Right side position
