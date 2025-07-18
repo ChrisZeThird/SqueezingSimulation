@@ -10,7 +10,7 @@ import utils.plot_parameters
 from utils.settings import settings
 
 # Analysis of singly resonant SHG efficiency versus focusing
-wavelength_pump = settings.wavelength
+wavelength_pump = 795e-9
 wavelength_harmonic = wavelength_pump / 2
 
 omega = 2 * np.pi * settings.c / wavelength_pump
@@ -39,7 +39,7 @@ def h_function(alpha, L):
 
 
 # Focusing parameter sweep
-w0_range = np.linspace(15e-6, 150e-6, 500)
+w0_range = np.linspace(start=10e-6, stop=70e-6, num=500)
 z_R = np.pi * w0_range ** 2 * n_pump / wavelength_pump
 L_array = L_c / z_R
 alpha = (alpha_pump - alpha_harmonic / 2) * z_R
@@ -105,14 +105,27 @@ for P_in in P_in_values:
     eta_results[str(P_in)] = np.array(eta_vals)
 
 
-# Plotting
-plt.figure(figsize=(8, 5))
+# Compute the maximum eta and corresponding waist values
+max_eta_results = {}
+
+# Create the plot
+fig, ax = plt.subplots(figsize=(8, 5))
+
 for P_in, eta_vals in eta_results.items():
-    plt.plot(L_array, eta_vals, label=f"P_in = {P_in} mW")
-plt.xlabel("Focusing Parameter L = Lc / zR")
-plt.ylabel("Conversion Efficiency η")
-plt.title("SHG Efficiency η vs Focusing Parameter L for Different Input Powers")
-plt.legend()
-plt.grid(True)
+    max_index = np.argmax(eta_vals)
+    max_eta = eta_vals[max_index]
+    corresponding_w0 = w0_range[max_index]
+    max_eta_results[P_in] = (max_eta, corresponding_w0)
+    # ax.plot(L_array, eta_vals, label=f"P_in = {P_in} mW")
+    ax.plot(w0_range * 1e6, eta_vals, label=rf"$P_{{\text{{in}}}} = {P_in}\,\text{{mW}}$")
+
+# Add labels, title, and legend
+# ax.set_xlabel(r"Focusing Parameter $L = L_c / z_R$")
+ax.set_ylabel(r"Conversion Efficiency $\eta$")
+ax.set_xlabel(r"Waist $w_0$ (μm)")
+# ax.set_title(r"SHG Efficiency $\eta$ vs Focusing Parameter $L$ for Different Input Powers")
+ax.set_title(r"SHG Efficiency $\eta$ vs waist $w_0$ for Different Input Powers")
+ax.legend()
+ax.grid(True)
 plt.tight_layout()
 plt.show()

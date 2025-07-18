@@ -17,18 +17,18 @@ plug_value: False
 wavelength: 780e-9
 
 # Cavity parameters
-fixed_length: 650e-3
+fixed_length: 600e-3
 fixed_d_curved: 125e-3
-min_L: 500e-3
+min_L: 200e-3
 max_L: 1000e-3
-cavity_loss: 0.0
+cavity_loss: 0.005
 d_curved_min: 50e-3
 d_curved_max: 250e-3
 
 # Transmission coefficients
 min_T: 0.01
 max_T: 0.2
-R: 150e-3
+R: 100e-3
 
 # Bandwidth
 central_freq: 10.0e6

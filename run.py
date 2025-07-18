@@ -25,8 +25,8 @@ if __name__ == '__main__':
 
     # -- Optimize waist -- #
     if settings.plot_waist:
-        # waist()
-        plot_max_waist_vs_all()
+        waist()
+        # plot_max_waist_vs_all()
         # results = angle_evolution(L_values=np.array([600, 700, 800, 900]) * 1e-3, plot=True)
         # custom_dc_range = np.linspace(start=163, stop=224, num=100) * 1e-3
         # angle_evolution(L_values=np.array([settings.fixed_length]), fixed_theta_deg=np.array([3, 5, 10]), plot=True, dc_range=custom_dc_range)
