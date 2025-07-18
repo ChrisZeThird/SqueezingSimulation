@@ -321,17 +321,17 @@ def plot_max_waist_vs_all():
     parameters = {
         'L': {
             'label': 'Cavity length $L$ (mm)',
-            'sweep': np.linspace(200, 800, 300) * 1e-3,
+            'sweep': np.linspace(start=settings.min_L, stop=settings.max_L, num=500),
             'unit_scale': 1e3
         },
         'lc': {
             'label': 'Crystal length $l_c$ (mm)',
-            'sweep': np.linspace(10, 30, 100, endpoint=True) * 1e-3,
+            'sweep': np.linspace(start=10., stop=30., num=100, endpoint=True) * 1e-3,
             'unit_scale': 1e3
         },
         'R': {
             'label': 'Mirror curvature $R$ (mm)',
-            'sweep': np.linspace(50, 150, 100, endpoint=True) * 1e-3,
+            'sweep': np.linspace(start=50., stop=150., num=100, endpoint=True) * 1e-3,
             'unit_scale': 1e3
         }
     }

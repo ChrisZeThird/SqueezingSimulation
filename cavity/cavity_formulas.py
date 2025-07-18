@@ -141,6 +141,6 @@ def Beam_waist(d_curved, L, R, l_crystal, index_crystal=settings.crystal_index, 
     w1, valid_z1 = compute_waist(z1, wavelength, index_crystal)
     w2, valid_z2 = compute_waist(z2, wavelength, 1.0)
 
-    print("Bandwidth: ", Bandwidth_bowtie(T=0.10, Loss=0.02, L=L) * 1e-6)
+    # print("Bandwidth: ", Bandwidth_bowtie(T=0.10, Loss=0.02, L=L) * 1e-6)
 
     return z1, z2, w1, w2, (valid_z1, valid_z2)
