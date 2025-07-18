@@ -93,7 +93,7 @@ def solve_eta(T1, Gamma, Gamma_eff, P_in=310e-3, epsilon=0.02):
 
 
 # Input power range
-P_in_values = np.array([100, 200, 310, 500])  # Different input powers in watts
+P_in_values = np.array([300, 400, 500, 1000])  # Different input powers in mW
 eta_results = {}
 
 for P_in in P_in_values:

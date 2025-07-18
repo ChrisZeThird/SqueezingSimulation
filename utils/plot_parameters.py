@@ -8,7 +8,7 @@ import numpy as np
 from utils.settings import settings
 
 # -- Matplotlib parameters -- #
-SMALL_SIZE = 15
+SMALL_SIZE = 12
 MEDIUM_SIZE = 20
 BIGGER_SIZE = 28
 

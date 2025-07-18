@@ -28,7 +28,7 @@ d_curved_max: 250e-3
 # Transmission coefficients
 min_T: 0.01
 max_T: 0.2
-R: 100e-3
+R: 150e-3
 
 # Bandwidth
 central_freq: 10.0e6
