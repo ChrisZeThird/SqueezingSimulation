@@ -276,7 +276,7 @@ def plot_max_waist_vs_all():
                 optimal_dc.append(np.nan)
 
         # Waist plot
-        ax1.plot(sweep_array * unit_scale, [w * 1e6 for w in max_waists], color='tab:red')
+        ax1.scatter(sweep_array * unit_scale, [w * 1e6 for w in max_waists], color='tab:red')
         ax1.set_xlabel(label)
         if i != 1:
             ax1.set_ylabel(f'Max beam waist $w_{"1" if waist_index == 1 else "2"}$ (µm)', color='tab:red')
@@ -285,7 +285,19 @@ def plot_max_waist_vs_all():
         ax1.tick_params(axis='y', labelcolor='tab:red')
 
         # Optimal d_curved plot
-        ax2.plot(sweep_array * unit_scale, [optimal_dc_value * 1e3 for optimal_dc_value in optimal_dc], color='tab:blue', linestyle='--')
+        ax2.scatter(sweep_array * unit_scale, [optimal_dc_value * 1e3 for optimal_dc_value in optimal_dc], color='tab:blue', linestyle='--')
+        # Add text annotations for each point on ax2
+        for sweep_val, opt_dc_val, max_waist in zip(sweep_array, optimal_dc, max_waists):
+            print(f"Sweep: {sweep_val * unit_scale:.1f}\nWaist: {max_waist * 1e6:.1f} µm\n$d_c$: {opt_dc_val * 1e3:.1f} mm")
+            print('-----------------------------------')
+        #     x_pos = sweep_val * unit_scale
+        #     y_pos = opt_dc_val * 1e3
+        #     ax2.annotate(f"Sweep: {x_pos:.1f}\nWaist: {max_waist * 1e6:.1f} µm\n$d_c$: {y_pos:.1f} mm",
+        #                  xy=(x_pos, y_pos),
+        #                  xytext=(x_pos + 10, y_pos + 5),
+        #                  fontsize=10, color='black',
+        #                  ha='center', va='bottom',
+        #                  bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'))
         if i != 0:
             ax2.set_ylabel('Optimal $d_c$ (mm)', color='tab:blue')
         else:
@@ -312,7 +324,8 @@ def plot_max_waist_vs_all():
             fixed_params_text += r"$l_c = {}$ mm".format(settings.crystal_length * 1e3) + "\n"
             fixed_params_text += r"$\lambda = {}$ nm".format(settings.wavelength * 1e9)
             y = 0.3
-
+        print(fixed_params_text)
+        print("==========================================")
         ax1.text(x, y, fixed_params_text, transform=ax1.transAxes, fontsize=12,
                  verticalalignment='top', horizontalalignment='left', color='black',
                  bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', boxstyle='round,pad=0.5'))
@@ -321,17 +334,17 @@ def plot_max_waist_vs_all():
     parameters = {
         'L': {
             'label': 'Cavity length $L$ (mm)',
-            'sweep': np.linspace(start=settings.min_L, stop=settings.max_L, num=500),
+            'sweep': np.array([407, 577, 838, 1017]) * 1e-3,
             'unit_scale': 1e3
         },
         'lc': {
             'label': 'Crystal length $l_c$ (mm)',
-            'sweep': np.linspace(start=10., stop=30., num=100, endpoint=True) * 1e-3,
+            'sweep': np.array([10, 20, 30]) * 1e-3,
             'unit_scale': 1e3
         },
         'R': {
             'label': 'Mirror curvature $R$ (mm)',
-            'sweep': np.linspace(start=50., stop=150., num=100, endpoint=True) * 1e-3,
+            'sweep': np.array([100, 150]) * 1e-3,
             'unit_scale': 1e3
         }
     }

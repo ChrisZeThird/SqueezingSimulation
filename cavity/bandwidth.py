@@ -129,3 +129,34 @@ def bandwidth(bandwidth_list=np.array([6, 10, 20])*1e6):
 
 if __name__ == "__main__":
     bandwidth()
+
+    # T = np.array([0.05, 0.07, 0.10, 0.12]) # Transmission coefficients
+    # T_name = ["5", "7", "10", "12"]  # Names for the transmission coefficients
+    # L = np.linspace(start=0.4, stop=1.5, num=1000) # Cavity lengths in meters
+    #
+    # # Define the target bandwidth range
+    # target_bandwidth = 6.0  # 6 MHz
+    # tolerance = 0.005
+    # bandwidth_min = target_bandwidth * (1 - tolerance)
+    # bandwidth_max = target_bandwidth * (1 + tolerance)
+    #
+    # # Compute the bandwidth for each combination of T and L
+    # results = {}
+    # for t, t_name in zip(T, T_name):
+    #     bandwidths = cf.Bandwidth_bowtie(T=t, L=L, Loss=0.) * 1e-6
+    #     # print(bandwidths)
+    #     # print("----------------------")
+    #     valid_indices = np.where((bandwidths >= bandwidth_min) & (bandwidths <= bandwidth_max))[0]
+    #     valid_L = L[valid_indices]
+    #     results[t_name] = valid_L
+    #
+    # # Print the results
+    # for t_name, valid_L in results.items():
+    #
+    #     print(f"T = {t_name}%:")
+    #     if valid_L.size > 0:
+    #         print(f"  Valid L values (m): {valid_L}")
+    #     else:
+    #         print("  No valid L values found.")
+    #
+    #     print("----------------------")
